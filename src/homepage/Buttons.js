@@ -17,10 +17,10 @@ export default function Buttons() {
 
   return (
     <Stack direction="row" spacing={2}>
-      <Button variant="contained" onClick={goToPlanner}>
+      <Button variant="contained" onClick={goToPlanner} fullWidth>
       PLANNER
       </Button>
-      <Button variant="contained" onClick={goToCalculator}>
+      <Button variant="contained" onClick={goToCalculator} fullWidth>
       CALCULATE CAP
       </Button>
     </Stack>
