@@ -1,6 +1,23 @@
 .App {
   text-align: center;
 }
+.Nav{
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  min-height: 10vh;
+  background-color: rgb(59, 65, 245);
+  color: rgba(255, 255, 255, 0.507) !important;
+
+}
+
+.nav-links{
+  width: 40%;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  list-style: none;
+}
 
 .App-logo {
   height: 40vmin;
