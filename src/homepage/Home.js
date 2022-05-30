@@ -20,7 +20,7 @@ export default function Home() {
 
   return (
     <>
-    <Card sx={{ maxWidth: 345 }}>
+    <Card sx={{ maxWidth: 3450,  margin: 25 }}>
       <CardContent>
         <Typography gutterBottom variant="h5" component="div">
           {currUser}
@@ -30,7 +30,7 @@ export default function Home() {
         </Typography>
       </CardContent>
       <CardActions>
-        <Button size="small">Relive The Journey!</Button>
+        <Button size="small" fullWidth>Relive The Journey!</Button>
       </CardActions>
     </Card>
     <>
