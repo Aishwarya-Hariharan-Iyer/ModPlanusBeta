@@ -4,6 +4,32 @@ import Box from "../module-planner/Components/Box/Box";
 import Button from "@mui/material/Button";
 import Link from "@mui/material/Link";
 import Avatar from "@mui/material/Avatar";
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import Typography from '@mui/material/Typography';
+import CssBaseline from '@mui/material/CssBaseline';
+import TextField from '@mui/material/TextField';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+import Paper from '@mui/material/Paper';
+import Grid from '@mui/material/Grid';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import Input from '@mui/material/Input';
+import { InputAdornment } from "@mui/material";
+
+function Copyright(props) {
+  return (
+    <Typography variant="body2" color="text.secondary" align="center" {...props}>
+      {'Copyright © '}
+      <Link color="inherit" href="https://mui.com/">
+        Your Website
+      </Link>{' '}
+      {new Date().getFullYear()}
+      {'.'}
+    </Typography>
+  );
+}
+
+const theme = createTheme();
 
 export default function Calculator() {
   const [addGradeText, setAddGradeText] = useState("");
@@ -79,16 +105,43 @@ export default function Calculator() {
 
   return (
     <>
-      <div className="Calculator">
-        <h1>Cap Calculator</h1>
-
-        <main>
-          <Box>
+      <ThemeProvider theme={theme}>
+      <Grid container component="main" sx={{ height: '100vh' }}>
+        <CssBaseline />
+        <Grid
+          item
+          xs={false}
+          sm={4}
+          md={7}
+          sx={{
+            backgroundImage: 'url(https://source.unsplash.com/random)',
+            backgroundRepeat: 'no-repeat',
+            backgroundColor: (t) =>
+              t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900],
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        />
+        <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square>
+          <Box
+            sx={{
+              my: 8,
+              mx: 4,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
+            <Typography component="h1" variant="h5">
+              CAP calculator!
+            </Typography>
+            <Box component="form" noValidate sx={{ mt: 1 }}
+>
             <h2>Add Data</h2>
             <form onSubmit={handleAddModule}>
               Module Name
               <label>
-                <input
+                <Input
                   style={{ margin: "0 1rem" }}
                   type="text"
                   value={addModuleText}
@@ -105,7 +158,7 @@ export default function Calculator() {
             <form onSubmit={handleAddModule}>
               Input Grade
               <label>
-                <input
+                <Input
                   style={{ margin: "0 1rem" }}
                   type="text"
                   value={addGradeText}
@@ -119,7 +172,7 @@ export default function Calculator() {
             <form onSubmit={handleAddModule}>
               Input MC
               <label>
-                <input
+                <Input
                   style={{ margin: "0 1rem" }}
                   type="text"
                   value={addMC}
@@ -130,7 +183,7 @@ export default function Calculator() {
               </label>
               <p> </p>
               <Button variant="contained">
-                <input type="submit" value="Add" />
+                <Input type="submit" value="Add" />
               </Button>
             </form>
             <p> </p>
@@ -164,11 +217,10 @@ export default function Calculator() {
             <h4>{credits / mc}</h4>
           </Box>
           <p> </p>
-          <div>
-            <Link href="">Head back to main page</Link>
-          </div>
-        </main>
-      </div>
+            </Box>
+        </Grid>
+      </Grid>
+    </ThemeProvider>
     </>
   );
 }
