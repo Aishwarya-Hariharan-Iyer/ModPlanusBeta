@@ -13,9 +13,7 @@ import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from './firebase-config';
-import UserCard from '../homepage/Home';
-import { useNavigate } from 'react-router-dom';
+import {auth} from './firebase-config';
 
 function Copyright(props) {
   return (
@@ -41,7 +39,7 @@ export default function SignUp() {
   const signup = async () => {
     try{
       const user = await createUserWithEmailAndPassword(auth, signUpEmail, signUpPassword);
-
+     
       /**
       const user = await auth.signup({
         //fill in the registration form details more elaborately
@@ -74,16 +72,6 @@ export default function SignUp() {
     });
     signup();
   };
-
-  let goTo = useNavigate(); 
-  const goToSignIn = () =>{ 
-    let path = `/signin`; 
-    goTo(path);
-  }
-  const goToHome = () =>{ 
-    let path = `/home`; 
-    goTo(path);
-  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -159,13 +147,12 @@ export default function SignUp() {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
-              onClick = {goToHome}
             >
               Sign Up
             </Button>
             <Grid container justifyContent="flex-end">
               <Grid item>
-                <Link href="#" variant="body2" onClick = {goToSignIn}>
+                <Link href="#" variant="body2">
                   Already have an account? Sign in
                 </Link>
               </Grid>
@@ -176,4 +163,4 @@ export default function SignUp() {
       </Container>
     </ThemeProvider>
   );
-} 
+}
