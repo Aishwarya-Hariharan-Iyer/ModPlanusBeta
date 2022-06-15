@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import { auth } from "./authentication/firebase-config";
 import {useState} from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { useForkRef } from "@mui/material";
 
 function Nav() {
     const [user, setUser] = useState({});
@@ -29,7 +28,10 @@ function Nav() {
         <Link style = {navStyle} to="/signout">
           <li>SignOut</li>
         </Link>
-        <h3>User Logged In:</h3>
+        <Link style = {navStyle} to = "/">
+        <li>Dashboard</li>
+        </Link>
+        <p>User Logged In:</p>
          {user?.email}
       </ul>
 
