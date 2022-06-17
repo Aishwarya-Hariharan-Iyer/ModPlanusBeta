@@ -58,9 +58,13 @@ import SignIn from './authentication/SignIn';
 import SignOut from './authentication/SignOut';
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import Home from './homepage/Home';
+import Profile from './profile-page/Profile';
 import Planner from './module-planner/planner-main';
 import Calculator from './cap-calculator/calculator';
 import Dashboard from './dashboard/Dashboard';
+import { auth } from "./authentication/firebase-config";
+import {useState} from "react";
+import { onAuthStateChanged } from "firebase/auth";
 
 const drawerWidth = 240;
 
@@ -133,6 +137,11 @@ export default function App() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
+  const [user, setUser] = useState({});
+    onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    })
+
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -161,7 +170,7 @@ export default function App() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            Welcome to ModPlaNUS!!!
+            Welcome to ModPlaNUS <p> {user?.email} </p>
           </Typography>
         </Toolbar>
       </AppBar>
@@ -184,6 +193,7 @@ export default function App() {
         <Route path='/planner' element={<Planner/>}/>
         <Route path='/calculator' element={<Calculator/>}/>
         <Route path='/dashboard' element = {<Dashboard/>}/>
+        <Route path='/account' element = {<Profile/>}/>
         <Route path='/' element = {<Dashboard/>}/>
       </Routes>
       </Box> 
