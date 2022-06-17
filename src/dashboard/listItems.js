@@ -19,7 +19,12 @@ export default function ListItems(){
   const goToHome = () =>{
     let path = '/home';
     goTo(path);
-  }
+  };
+
+  const goToProfile = () =>{ 
+    let path = `/account`; 
+    goTo(path);
+  };
 
   const goToCalculator = () =>{ 
     let path = `/calculator`; 
@@ -68,7 +73,7 @@ export default function ListItems(){
       </ListItemIcon>
       <ListItemText primary="ChatRoom" />
     </ListItemButton>
-    <ListItemButton>
+    <ListItemButton onClick={goToProfile}>
       <ListItemIcon>
         <ManageAccountsIcon />
       </ListItemIcon>
