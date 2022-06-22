@@ -1,42 +1,3 @@
-/**
-import './App.css';
-import SignUp from './authentication/SignUp';
-import SignIn from './authentication/SignIn';
-import SignOut from './authentication/SignOut';
-import Nav from './Nav';
-import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
-import Home from './homepage/Home';
-import Planner from './module-planner/planner-main';
-import Calculator from './cap-calculator/calculator';
-import Dashboard from './dashboard/Dashboard';
-import MiniDrawer from './dashboard/MinivariantDrawer';
-
-function App() {
-
-  const rootElement = document.getElementById("root");
-
-    return (
-      <Router>
-      <div className='App'>
-        <MiniDrawer/>
-        <Routes>
-        <Route path='/home' element={<Home/>}/>
-        <Route path='/signin' element={<SignIn/>}/>
-        <Route path='/signup' element={<SignUp/>}/>
-        <Route path='/signout' element={<SignOut/>}/>
-        <Route path='/planner' element={<Planner/>}/>
-        <Route path='/calculator' element={<Calculator/>}/>
-        <Route path='/dashboard' element = {<Dashboard/>}/>
-      </Routes>
-      </div>
-      </Router>
-    
-    );
-  }
-
-export default App;
-*/
-
 import * as React from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -58,13 +19,11 @@ import SignIn from './authentication/SignIn';
 import SignOut from './authentication/SignOut';
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import Home from './homepage/Home';
-import Profile from './profile-page/Profile';
 import Planner from './module-planner/planner-main';
 import Calculator from './cap-calculator/calculator';
 import Dashboard from './dashboard/Dashboard';
-import { auth } from "./authentication/firebase-config";
-import {useState} from "react";
-import { onAuthStateChanged } from "firebase/auth";
+import railroadbg from './assets/railroadbg.jpg';
+import NotFoundPage from './error-pages/NotFoundPage';
 
 const drawerWidth = 240;
 
@@ -137,11 +96,6 @@ export default function App() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
-  const [user, setUser] = useState({});
-    onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    })
-
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -149,6 +103,15 @@ export default function App() {
   const handleDrawerClose = () => {
     setOpen(false);
   };
+
+  const myStyle = {
+    backgroundImage: `url(${railroadbg})`,
+    width: "100%",
+    height: "100%",
+    backgroundPosition: 'center',
+  backgroundSize: 'stretch',
+  backgroundRepeat: 'repeat-y'
+  }
 
   return (
     <Router>
@@ -170,7 +133,7 @@ export default function App() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            Welcome to ModPlaNUS <p> {user?.email} </p>
+            Welcome to ModPlaNUS!!!
           </Typography>
         </Toolbar>
       </AppBar>
@@ -193,8 +156,8 @@ export default function App() {
         <Route path='/planner' element={<Planner/>}/>
         <Route path='/calculator' element={<Calculator/>}/>
         <Route path='/dashboard' element = {<Dashboard/>}/>
-        <Route path='/account' element = {<Profile/>}/>
         <Route path='/' element = {<Dashboard/>}/>
+        <Route path="*" element={<NotFoundPage/>} />
       </Routes>
       </Box> 
     </Box>
