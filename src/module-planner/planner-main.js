@@ -2,17 +2,10 @@ import React from "react";
 import { useState } from "react";
 import Box from "./Components/Box/Box";
 import Button from "@mui/material/Button";
-import Link from "@mui/material/Link";
-import Avatar from "@mui/material/Avatar";
-import { ThemeProvider } from "@mui/material";
-import SearchModBar from "./Components/SearchModBar";
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import PlannerMain from './PlannerMain.css';
-import { positions } from '@mui/system';
-import BasicSelect from "./Components/GradeDropdown";
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 
@@ -24,11 +17,9 @@ const API_MODULE_INFO = 'https://api.nusmods.com/v2/2021-2022/modules/'
 export default function Planner() {
   const [addGradeText, setAddGradeText] = useState('');
   const [Module, setModule] = useState([]);
-  const [addModuleText, setAddModuleText] = useState("");
   const [info, setInfo] = useState('');
   const [data, setData] = React.useState([]);
   const [searchData, setSearchData] = React.useState([]);
-//  const [data2, setData2] = React.useState([]);
   const [preclusions, setPreclusions] = React.useState("");
   const [corequisites, setCorequisites] = React.useState("");
   const [prerequisites, setPrerequsiites] = React.useState([]);
@@ -37,7 +28,6 @@ export default function Planner() {
   let eligibleMods = ['CS1101S'];
   const [warning, setWarning] = React.useState("");
   const [warning2, setWarning2] = React.useState("");
-  //const [modsDone, setModsDone] = React.useState([]);
 
 
 React.useEffect(
@@ -56,25 +46,6 @@ function searchMod(m){
 
 
 
-/**
-*React.useEffect(
-*  () => {
-*      fetch(API_MODULE)
-*      .then(res => res.json())
-*      .then(d => setData2(d))
-*  }, []
-* );
-*/
-
-  function handleAddModule(event) {
-    // React honours default browser behavior and the
-    // default behaviour for a form submission is to
-    // submit AND refresh the page. So we override the
-    // default behaviour here as we don't want to refresh
-    event.preventDefault();
-    addModule(addModuleText, addGradeText);
-    // console.log(data2);
-  }
 
   function addModule(code, grade) {
     mods = mods + "; " + code;
@@ -86,9 +57,6 @@ function searchMod(m){
     setFulfillReqs(modsAll);
     console.log(searchData);
     const res = new RegExp(/(\b[A-Z0-9][A-Z0-9]+|\b[A-Z]\b)/g);
-    //const prec = corequisites.match(res);
-    //console.log(corequisites);
-    //console.log(searchData.preclusion);
 
     const modsPlanned = Module.map(x => x.code);
 
@@ -97,7 +65,6 @@ function searchMod(m){
     let coreqMods = [];
     let containsPreclusions = false;
     let containsCorequisites = true;
-    let containsPrerequisites = true;
 
     if(preclusions!==undefined){
       precMods = preclusions.match(res);
@@ -125,7 +92,6 @@ function searchMod(m){
           code: code,
           grade: grade,
           preclusions: preclusions
-          //isComplete: false
         }
       ];
 
@@ -133,8 +99,6 @@ function searchMod(m){
 
     } else {
       if(containsPreclusions){
-        const msg = 'ERROR: PRECLUSIONS THERE! Have you accidentally added these modules? '
-        +  preclusions;
 
       }
       if(!containsCorequisites) {
@@ -142,7 +106,6 @@ function searchMod(m){
         setWarning(msg); 
       }
       if(modsPlanned.includes(code)){
-        const msg = "ERROR: Can't add the same module twice!";
       }
       else{
         const msg = "WARNING: Have you completed all these prerequisites ? " + prerequisites;
@@ -259,9 +222,6 @@ function searchMod(m){
             </table>
           </Box>
           <p> </p>
-          <div>
-            <Link href="">Head back to main page</Link>
-          </div>
         </main>
       </div>
     </>
