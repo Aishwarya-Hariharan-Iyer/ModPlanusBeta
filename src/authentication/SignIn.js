@@ -70,6 +70,11 @@ export default function SignIn() {
     goTo(path);
   }
 
+  const routeHome = () =>{ 
+    let path = `/home`; 
+    goTo(path);
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <Grid container component="main" sx={{ height: '100vh' }}>
@@ -134,6 +139,7 @@ export default function SignIn() {
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
+                onClick={routeHome}
               >
                 Sign In
               </Button>

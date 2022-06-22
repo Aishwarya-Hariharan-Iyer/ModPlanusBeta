@@ -22,8 +22,11 @@ import Home from './homepage/Home';
 import Planner from './module-planner/planner-main';
 import Calculator from './cap-calculator/calculator';
 import Dashboard from './dashboard/Dashboard';
-import railroadbg from './assets/railroadbg.jpg';
 import NotFoundPage from './error-pages/NotFoundPage';
+import Profile from './profile-page/Profile';
+import 'firebase/compat/auth';
+import 'firebase/compat/database';
+import RightButtons from './dashboard/RightButtons';
 
 const drawerWidth = 240;
 
@@ -104,14 +107,8 @@ export default function App() {
     setOpen(false);
   };
 
-  const myStyle = {
-    backgroundImage: `url(${railroadbg})`,
-    width: "100%",
-    height: "100%",
-    backgroundPosition: 'center',
-  backgroundSize: 'stretch',
-  backgroundRepeat: 'repeat-y'
-  }
+
+  //const email = firebase.auth().currentUser.email;
 
   return (
     <Router>
@@ -120,6 +117,7 @@ export default function App() {
       <CssBaseline />
       <AppBar position="fixed" open={open}>
         <Toolbar>
+        <Box display='flex' flexGrow={1}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -133,9 +131,11 @@ export default function App() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            Welcome to ModPlaNUS!!!
+            Welcome to ModPlaNUS
           </Typography>
-        </Toolbar>
+          </Box>
+          <RightButtons/>
+           </Toolbar>
       </AppBar>
       <Drawer variant="permanent" open={open}>
         <DrawerHeader>
@@ -157,6 +157,7 @@ export default function App() {
         <Route path='/calculator' element={<Calculator/>}/>
         <Route path='/dashboard' element = {<Dashboard/>}/>
         <Route path='/' element = {<Dashboard/>}/>
+        <Route path='/account' element = {<Profile/>}/>
         <Route path="*" element={<NotFoundPage/>} />
       </Routes>
       </Box> 
