@@ -15,6 +15,16 @@ import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Input from '@mui/material/Input';
 import { InputAdornment } from "@mui/material";
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/database';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SaveIcon from '@mui/icons-material/Save';
+var temp;
 
 function Copyright(props) {
   return (
@@ -38,6 +48,10 @@ export default function Calculator() {
   const [credits, setCredits] = useState(0);
   const [mc, setMC] = useState(0);
   const [addModuleText, setAddModuleText] = useState("");
+  const [cmc, setCMC] = useState(20);
+  const [cap, setCap] = useState(5);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
 
   function handleAddModule(event) {
     // React honours default browser behavior and the
@@ -59,14 +73,57 @@ export default function Calculator() {
         isComplete: false
       }
     ];
-    setMC(mc + des * 1);
-    setCredits(credits + des * ComputeC(desc));
+    console.log(desc !== "S");
+    if (desc !== "S" && desc !== "U") {
+      setMC(mc + des * 1);
+    }
+    else {
+      setMC(mc);
+    }
+    setCredits(credits + (des * ComputeC(desc)));
     const newNew = newModule.map((m) => m.description);
     setModule(newModule);
     //console.log(newModule);
     console.log(newNew);
     //setS(newNew);
   }
+
+  const database = firebase.database();
+
+  const handleSubmit = (e) => {
+    //console.log(user?.email);
+    e.preventDefault();
+    // const users = firebase.database().ref('User');
+   // const currUserEmail = firebase.auth().currentUser.email;
+    
+   const currUser = firebase.auth().currentUser;
+   //console.log('HIII' + currUser.name);
+   database.ref('/cap/'+ firstName + lastName).set(
+    {
+      firstName : firstName,
+      lastName : lastName,
+      Module : Module,
+      Grade : addGradeText,
+      cap: (credits + (cap*cmc)) / (mc + cmc)
+    }).then(() => {
+      window.alert('user cap information added to database!');
+    })
+    .catch(error => {
+      console.error(error);
+    });
+
+    //users.push(user);
+  };
+
+  const deleteProfile = () => {
+    database.ref('/cap/').child(firstName + lastName).remove()
+    .then(() => {
+      window.alert('user cap information removed from database!');
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  };
 
   function ComputeC(grade) {
     if (grade === "A+" || grade === "A") {
@@ -81,6 +138,9 @@ export default function Calculator() {
     if (grade === "B") {
       return 3.5;
     }
+    if (grade === "B-") {
+      return 3;
+    }
     if (grade === "C+") {
       return 2.5;
     }
@@ -94,6 +154,12 @@ export default function Calculator() {
       return 1;
     }
     if (grade === "F") {
+      return 0;
+    }
+    if (grade === "S") {
+      return 0;
+    }
+    if (grade === "U") {
       return 0;
     }
   }
@@ -155,19 +221,36 @@ export default function Calculator() {
               </label>
             </form>
             <p> </p>
-            <form onSubmit={handleAddModule}>
-              Input Grade
-              <label>
-                <Input
-                  style={{ margin: "0 1rem" }}
-                  type="text"
-                  value={addGradeText}
-                  onChange={(event) => {
-                    setAddGradeText(event.target.value);
-                  }}
-                />
-              </label>
-            </form>
+            <FormControl variant="standard" sx={{ m: 1, minWidth: 275 }} onSubmit={handleAddModule}>
+              <InputLabel id="demo-simple-select-standard-label"> Grade </InputLabel>
+              <Select
+                labelId="demo-simple-select-standard-label"
+                id="demo-simple-select-standard"
+                type="text"
+                value={addGradeText}
+                onChange={(event) => {
+                  temp = event.target.value; 
+                  setAddGradeText(event.target.value);
+                }}
+                label="Grade"
+              >
+                <MenuItem value="">
+                </MenuItem>
+                <MenuItem value = {"A+"}>A+</MenuItem>
+                <MenuItem value = {"A"}>A</MenuItem>
+                <MenuItem value = {"A-"}>A-</MenuItem>
+                <MenuItem value = {"B+"}>B+</MenuItem>
+                <MenuItem value = {"B"}>B</MenuItem>
+                <MenuItem value = {"B-"}>B-</MenuItem>
+                <MenuItem value = {"C+"}>C+</MenuItem>
+                <MenuItem value = {"C"}>C</MenuItem>
+                <MenuItem value = {"D+"}>D+</MenuItem>
+                <MenuItem value = {"D"}>D</MenuItem>
+                <MenuItem value = {"F"}>F</MenuItem>
+                <MenuItem value = {"S"}>S</MenuItem>
+                <MenuItem value = {"U"}>U</MenuItem>
+              </Select>
+            </FormControl>
             <p> </p>
             <form onSubmit={handleAddModule}>
               Input MC
@@ -177,7 +260,12 @@ export default function Calculator() {
                   type="text"
                   value={addMC}
                   onChange={(event) => {
-                    setAddMC(event.target.value);
+                    if (temp === "S" || temp === "U") {
+                      setAddMC(0);
+                    }
+                    else {
+                      setAddMC(event.target.value);
+                    }
                   }}
                 />
               </label>
@@ -213,11 +301,54 @@ export default function Calculator() {
                 ))}
               </tbody>
             </table>
-            <h4>CAP is:</h4>
-            <h4>{credits / mc}</h4>
+            <h4>Cummulative CAP is: {cap}</h4>
+            <h4>CAP is: {(credits + (cap*cmc)) / (mc + cmc)}</h4>
+
+            <p></p>
+            <Grid item xs={12} sm={6} m={5}>
+            <TextField
+              required
+              id="firstName"
+              name="firstName"
+              label="First name"
+              fullWidth
+              autoComplete="given-name"
+              variant="outlined"
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+            </Grid>
+            <Grid item xs={12} sm={6} m={5}>
+              <TextField
+                required
+                id="lastName"
+                name="lastName"
+                label="Last name"
+                fullWidth
+                autoComplete="family-name"
+                variant="outlined"
+                onChange={(e) => setLastName(e.target.value)}
+              />
+            </Grid>
+
+            <Grid item xs={12} m={5}>
+            <Button variant="contained" 
+            startIcon={<SaveIcon />} 
+            sx ={{m: 4}}
+            onClick={handleSubmit}
+            >
+            Save Changes
+            </Button>
+            <Button variant="outlined" 
+            startIcon={<DeleteIcon />}
+            sx ={{m: 4}} 
+            onClick={ deleteProfile }
+            >
+            Delete Account
+            </Button>
+            </Grid>
           </Box>
           <p> </p>
-            </Box>
+        </Box>
         </Grid>
       </Grid>
     </ThemeProvider>
