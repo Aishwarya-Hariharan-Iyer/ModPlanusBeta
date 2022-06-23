@@ -24,6 +24,9 @@ import Calculator from './cap-calculator/calculator';
 import Dashboard from './dashboard/Dashboard';
 import railroadbg from './assets/railroadbg.jpg';
 import NotFoundPage from './error-pages/NotFoundPage';
+import { auth } from "./authentication/firebase-config";
+import {useState} from "react";
+import { onAuthStateChanged } from "firebase/auth";
 
 const drawerWidth = 240;
 
@@ -96,6 +99,11 @@ export default function App() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
+  const [user, setUser] = useState({});
+    onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    })
+
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -135,6 +143,9 @@ export default function App() {
           <Typography variant="h6" noWrap component="div">
             Welcome to ModPlaNUS!!!
           </Typography>
+          <Typography variant="h6" noWrap component="div" align="right">
+            User logged in: {user?.email} 
+          </Typography> 
         </Toolbar>
       </AppBar>
       <Drawer variant="permanent" open={open}>

@@ -15,7 +15,14 @@ import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
-
+import { useNavigate } from "react-router-dom";
+import Grid from '@mui/material/Grid';
+import Input from '@mui/material/Input';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/database';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SaveIcon from '@mui/icons-material/Save';
 
 
 const API_NUSMODS_URL = 'https://api.nusmods.com/v2/2021-2022/moduleList.json';
@@ -38,7 +45,8 @@ export default function Planner() {
   const [warning, setWarning] = React.useState("");
   const [warning2, setWarning2] = React.useState("");
   //const [modsDone, setModsDone] = React.useState([]);
-
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
 
 React.useEffect(
   () => {
@@ -54,7 +62,11 @@ function searchMod(m){
   .then(d => setSearchData(d))
 }
 
-
+let goTo = useNavigate(); 
+  const routeChange = () =>{ 
+    let path = `/home`; 
+    goTo(path);
+  }
 
 /**
 *React.useEffect(
@@ -156,6 +168,43 @@ function searchMod(m){
 
 
   }
+
+  const database = firebase.database();
+
+  const handleSubmit = (e) => {
+    //console.log(user?.email);
+    e.preventDefault();
+    // const users = firebase.database().ref('User');
+   // const currUserEmail = firebase.auth().currentUser.email;
+    
+   const currUser = firebase.auth().currentUser;
+   //console.log('HIII' + currUser.name);
+   database.ref('/planner/'+ firstName + lastName).set(
+    {
+      firstName : firstName,
+      lastName : lastName,
+      Module : Module,
+      Grade : addGradeText
+    }).then(() => {
+      window.alert('user planner information added to database!');
+    })
+    .catch(error => {
+      console.error(error);
+    });
+
+    //users.push(user);
+  };
+
+  const deleteProfile = () => {
+    database.ref('/planner/').child(firstName + lastName).remove()
+    .then(() => {
+      window.alert('user planner information removed from database!');
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  };
+
   return (
     <>
       <div className="Planner" style={PlannerMain.planner}>
@@ -232,7 +281,7 @@ function searchMod(m){
 
       <p></p>
               <Button variant="contained">
-                <input type="submit" value="Add" onClick={()=>{addModule(info, addGradeText);}}/>
+                <Input type="submit" value="Add" onClick={()=>{addModule(info, addGradeText);}}/>
               </Button>
             <p> </p>
           </Box>
@@ -257,11 +306,57 @@ function searchMod(m){
                 ))}
               </tbody>
             </table>
+            <p></p>
+
+            <Grid item xs={12} sm={6} m={5}>
+            <TextField
+              required
+              id="firstName"
+              name="firstName"
+              label="First name"
+              fullWidth
+              autoComplete="given-name"
+              variant="outlined"
+              onChange={(e) => setFirstName(e.target.value)}
+            />
+            </Grid>
+            <Grid item xs={12} sm={6} m={5}>
+              <TextField
+                required
+                id="lastName"
+                name="lastName"
+                label="Last name"
+                fullWidth
+                autoComplete="family-name"
+                variant="outlined"
+                onChange={(e) => setLastName(e.target.value)}
+              />
+            </Grid>
+
+            <Grid item xs={12} m={5}>
+            <Button variant="contained" 
+            startIcon={<SaveIcon />} 
+            sx ={{m: 4}}
+            onClick={handleSubmit}
+            >
+            Save Changes
+            </Button>
+            <Button variant="outlined" 
+            startIcon={<DeleteIcon />}
+            sx ={{m: 4}} 
+            onClick={ deleteProfile }
+            >
+            Delete Account
+            </Button>
+            </Grid>
+
           </Box>
           <p> </p>
-          <div>
-            <Link href="">Head back to main page</Link>
-          </div>
+          <Grid item>
+            <Link href="#" variant="body2" onClick = {routeChange}>
+              {"Head back to main page"}
+            </Link>
+          </Grid>
         </main>
       </div>
     </>
