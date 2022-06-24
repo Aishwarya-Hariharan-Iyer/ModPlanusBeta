@@ -9,6 +9,16 @@ import { useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
+import { db } from '../authentication/firebase-config';
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  setDoc,
+  doc,
+} from "firebase/firestore";
 
 export default function Profile() { 
 
@@ -33,20 +43,14 @@ export default function Profile() {
     
    const email = firebase.auth().currentUser.email.split('@')[0];
    console.log(email);
-   database.ref('/users/'+ email).set(
-    {
-      firstName : firstName,
-      lastName : lastName,
-      displayName: displayName,
-      email: email,
-      year: year,
-      semester: semester,
-      major:major,
-      minor:minor,
-      otherProgrammes: otherProgrammes
-    });
 
     //users.push(user);
+    updateUser(firebase.auth().currentUser.uid, firstName);
+  };
+
+  const updateUser = async (id, name) => {
+    const userDoc = doc(db, "users-profile", id);
+    await updateDoc(userDoc, {firstName: name});
   };
 
   return (

@@ -102,7 +102,7 @@ function searchMod(m){
 
       }
       if(!containsCorequisites) {
-        const msg = "WARNING: Remeber to add these corequisites too: " + corequisites;
+        const msg = "WARNING: Remember to add these corequisites too: " + corequisites;
         setWarning(msg); 
       }
       if(modsPlanned.includes(code)){
