@@ -27,6 +27,7 @@ import Profile from './profile-page/Profile';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
 import RightButtons from './dashboard/RightButtons';
+import FeedbackForm from './feedback-form/FeedbackForm';
 
 const drawerWidth = 240;
 
@@ -156,6 +157,7 @@ export default function App() {
         <Route path='/planner' element={<Planner/>}/>
         <Route path='/calculator' element={<Calculator/>}/>
         <Route path='/dashboard' element = {<Dashboard/>}/>
+        <Route path='/feedbackform' element = {<FeedbackForm/>}/>
         <Route path='/' element = {<Dashboard/>}/>
         <Route path='/account' element = {<Profile/>}/>
         <Route path="*" element={<NotFoundPage/>} />
