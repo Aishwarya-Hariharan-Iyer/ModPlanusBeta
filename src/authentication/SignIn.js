@@ -16,33 +16,19 @@ import { auth } from './firebase-config';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from "react-router-dom";
 
-function Copyright(props) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
-
 const theme = createTheme();
 
 export default function SignIn() {
   const [signInEmail, setSignInEmail] = React.useState("");
   const [signInPassword, setSignInPassword] = React.useState("");
 
-  const login = async () => {
+  const login = async (em, ps) => {
     try{
-      const user = await signInWithEmailAndPassword(
+      await signInWithEmailAndPassword(
         auth,
-        signInEmail,
-        signInPassword
-      );
-      console.log(user);
+        em,
+        ps
+      ).then(routeHome);
     } catch (error) {
       console.log(error.message);
     }
@@ -61,7 +47,7 @@ export default function SignIn() {
       password: password,
     });
 
-    login();
+    login(email, password);
 
   };
   let goTo = useNavigate(); 
@@ -139,7 +125,6 @@ export default function SignIn() {
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-                onClick={routeHome}
               >
                 Sign In
               </Button>
@@ -155,7 +140,6 @@ export default function SignIn() {
                   </Link>
                 </Grid>
               </Grid>
-              <Copyright sx={{ mt: 5 }} />
             </Box>
           </Box>
         </Grid>
