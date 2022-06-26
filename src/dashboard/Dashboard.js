@@ -57,7 +57,8 @@ const tiers = [
 const footers = [
   {
     title: 'Contact Us',
-    description: ['Email', 'Feedback Form', 'GitHub'],
+    description: ['Feedback Form', 'GitHub'],
+    path: [`/`, `https://github.com/ModPlaNUS/ModPlaNUS`]
   },
   {
     title: 'Useful Websites',
@@ -66,6 +67,9 @@ const footers = [
       'NUSMODS',
       'EduRec',
     ],
+    path:['https://luminus.nus.edu.sg/?r=%2Fdashboard', 
+    'https://nusmods.com/timetable/sem-1', 
+    'https://myedurec.nus.edu.sg/psp/cs90prd/?cmd=login&languageCd=ENG&'],
   },
 ];
 
@@ -158,24 +162,40 @@ export default function Dashboard() {
         }}
       >
         <Grid container spacing={4} justifyContent="space-evenly">
-          {footers.map((footer) => (
-            <Grid item xs={6} sm={3} key={footer.title}>
-              <Typography variant="h6" color="text.primary" gutterBottom>
-                {footer.title}
-              </Typography>
-              <ul>
-                {footer.description.map((item) => (
-                  <li key={item}>
-                    <Link href="#" variant="subtitle1" color="text.secondary">
-                      {item}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </Grid>
-          ))}
+          <Grid>
+            <Typography variant = "h5">
+            Contact Us
+            </Typography>
+            <Typography>
+            <Link href="https://github.com/ModPlaNUS/ModPlaNUS" variant="subtitle1" color="text.secondary">  
+            GitHub
+            </Link>
+            </Typography>
+            <Button variant='text' onClick={()=>goTo('/feedbackform')}>
+              Feedback Form
+            </Button>
+          </Grid>
+          <Grid>
+          <Typography variant = "h5">
+          Useful Websites
+          </Typography>
+          <Typography>
+          <Link href="https://luminus.nus.edu.sg/?r=%2Fdashboard" variant="subtitle1" color="text.secondary">  
+          LumiNUS
+          </Link>
+          </Typography>
+          <Typography>
+          <Link href="https://nusmods.com" variant="subtitle1" color="text.secondary">  
+          NUSMODS
+          </Link>
+          </Typography>
+          <Typography>
+          <Link href="https://myedurec.nus.edu.sg/psp/cs90prd/?cmd=login&languageCd=ENG&" variant="subtitle1" color="text.secondary">  
+          EduRec
+          </Link>
+          </Typography>
+          </Grid>
         </Grid>
-        <Copyright sx={{ mt: 5 }} />
       </Container>
       {/* End footer */}
     </React.Fragment>
