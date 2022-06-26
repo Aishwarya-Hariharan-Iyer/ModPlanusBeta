@@ -130,6 +130,7 @@ export default function SignIn() {
                 label="Remember me"
               />
               <Button
+                role = "button"
                 type="submit"
                 fullWidth
                 variant="contained"
