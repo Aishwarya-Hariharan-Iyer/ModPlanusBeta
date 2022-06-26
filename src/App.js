@@ -132,7 +132,7 @@ export default function App() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            Welcome to ModPlaNUS
+            WELCOME TO MODPLANUS!
           </Typography>
           </Box>
           <RightButtons/>

@@ -49,23 +49,12 @@ export default function SignUp() {
     goTo(path);
   }
 
-  const signup = async () => {
+  const signup = async (em, ps, userProfile) => {
     try{
-      const userProfile = {
-        firstName:signUpFirstName,
-        lastName: signUpLastName,
-        email: signUpEmail,
-        displayName: signUpDisplayName,
-        year: signUpYear,
-        semester: signUpSemester,
-        major: signUpMajor,
-        minor: signUpMinor,
-        otherProgrammes: signUpOtherProgrammes,
-      };
-      const user = await createUserWithEmailAndPassword(auth, signUpEmail, signUpPassword)
+      await createUserWithEmailAndPassword(auth, em, ps).then(user=> {
       const userRef = doc(db, "users-profile", user.user.uid);
       setDoc(userRef, userProfile);
-      console.log(user);
+    }).then(routeHome);
     } catch (error) {
       console.log(error.message);
     }
@@ -76,38 +65,40 @@ export default function SignUp() {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const email = data.get('email');
-    setSignUpEmail(email);
     const password = data.get('password');
-    setSignUpPassword(password);
     const firstName = data.get('firstName');
-    setSignUpFirstName(firstName);
     const lastName = data.get('lastName');
-    setSignUpLastName(lastName);
     const major = data.get('major');
-    setSignUpMajor(major);
     const minor = data.get('minor');
-    setSignUpMinor(minor);
     const year = data.get('year');
-    setSignUpYear(year);
     const semester = data.get('semester');
-    setSignUpSemester(semester);
     const otherProgrammes = data.get('otherProgrammes');
-    setSignUpOtherProgrammes(otherProgrammes);
     const displayName = data.get('displayName');
-    setSignUpDisplayName(displayName);
-    console.log({
+
+    const user = {
       email: email,
       password: password,
       displayName: displayName,
       firstName: firstName,
       lastName: lastName,
-      year: year,
-      semester: semester,
       major: major,
       minor: minor,
+      year: year,
+      semester: semester,
       otherProgrammes: otherProgrammes,
-    });
-    signup();
+    }
+
+    setSignUpEmail(email);
+    setSignUpPassword(password);
+    setSignUpFirstName(firstName);
+    setSignUpLastName(lastName);
+    setSignUpMajor(major);
+    setSignUpMinor(minor);
+    setSignUpYear(year);
+    setSignUpSemester(semester);
+    setSignUpOtherProgrammes(otherProgrammes);
+    setSignUpDisplayName(displayName);
+    signup(email, password, user);
   };
 
   return (
@@ -238,7 +229,6 @@ export default function SignUp() {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
-              //onClick={routeHome}
             >
               Sign Up
             </Button>
