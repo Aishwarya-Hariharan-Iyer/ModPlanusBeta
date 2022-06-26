@@ -2,27 +2,26 @@ import * as React from 'react';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Button from '@mui/material/Button';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
-import { database } from '../authentication/firebase-config';
-import firebaseConfig from '../authentication/firebase-config';
 import { useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
-import { useRadioGroup } from '@mui/material';
-import { rootShouldForwardProp } from '@mui/material/styles/styled';
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from '../authentication/firebase-config';
-import { useResolvedPath } from 'react-router-dom';
-import { ref } from 'firebase/database';
+import { getAuth } from "firebase/auth";
+import { db } from '../authentication/firebase-config';
+import {
+  onSnapshot,
+  updateDoc,
+  doc,
+} from "firebase/firestore";
+import '@firebase/firestore'
 
 export default function Profile() { 
 
-  const { currentUser } = firebase.auth();
+
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -31,39 +30,51 @@ export default function Profile() {
   const [otherProgrammes, setOtherProgrammes] = useState('');
   const [year, setYear] = useState('');
   const [semester, setSemester] = useState('');
-  const [user, setUser] = useState({});
-  const [email, setEmail] = useState('');
+  const [info, setInfo] = useState([]);
 
-  const database = firebase.database();
+
+  const [userInfo, setUserInfo] = useState([]);
 
   const handleSubmit = (e) => {
-    //console.log(user?.email);
     e.preventDefault();
-    // const users = firebase.database().ref('User');
-   // const currUserEmail = firebase.auth().currentUser.email;
-    
-   const currUser = firebase.auth().currentUser;
-   //console.log('HIII' + currUser.name);
-   database.ref('/users/'+ firstName + lastName).set(
-    {
-      firstName : firstName,
-      lastName : lastName,
+    updateUser(firebase.auth().currentUser.uid);  
+  };
+
+  function getInfo(){
+    if(firebase.auth().currentUser){
+
+      const user = onSnapshot(doc(db, "users-profile", firebase.auth().currentUser.uid), 
+      (doc) => {
+        console.log(doc.data());
+        setUserInfo(doc.data());
+        });
+        return user;
+      } else {
+       console.log("no info");
+      }
+  }
+
+  React.useEffect(()=>{getInfo()}, [userInfo]);
+
+  const updateUser = async (id) => {
+    const userDoc = doc(db, "users-profile", id);
+    const userNew = {
+      firstName: firstName,
+      lastName: lastName,
       displayName: displayName,
-      email: email,
       year: year,
       semester: semester,
-      major:major,
-      minor:minor,
-      otherProgrammes: otherProgrammes
-    });
-
-    //users.push(user);
+      major: major,
+      minor: minor,
+      otherProgrammes: otherProgrammes,
+    }
+    await updateDoc(userDoc, userNew);
   };
 
   return (
     <React.Fragment>
       <Typography variant="h3" gutterBottom>
-        My Profile
+        My Profile 
       </Typography>
 
 <p></p>
@@ -72,26 +83,55 @@ export default function Profile() {
       Your Display Name is how you shall appear to others. Please enter your year of study for the current/upcoming academic year in the format 'YEAR X'
         (e.g. YEAR 1, YEAR 2, etc.). Similarly, enter your Semester of study as 'SEMESTER 1' or 'SEMESTER 2'.
       </Typography>
+      <Typography>{userInfo.email}</Typography>
 
 <p></p>
+
+<Grid item xs={12} sm={6} m={5}>
+          <Typography variant='h6'>
+     Email
+      </Typography>
+      <p></p>
+          <TextField
+          disabled
+            
+            id="email"
+            name="email"
+            placeholder={userInfo.email}
+            fullWidth
+            autoComplete="display-name"
+            variant="outlined"
+            onChange={(e) => setDisplayName(e.target.value)}
+          />
+        </Grid>
       <Grid item xs={12} sm={6} m={5}>
+      <Typography variant='h6'>
+      First Name
+      </Typography>
+      <p></p>
+      
           <TextField
             required
             id="firstName"
             name="firstName"
-            label="First name"
             fullWidth
+            placeholder={userInfo.firstName}
             autoComplete="given-name"
             variant="outlined"
-            onChange={(e) => setFirstName(e.target.value)}
+            onChange={(e) => {setFirstName(e.target.value)}}
           />
         </Grid>
+
         <Grid item xs={12} sm={6} m={5}>
+        <Typography variant='h6'>
+      Last Name
+      </Typography>
+      <p></p>
           <TextField
             required
             id="lastName"
             name="lastName"
-            label="Last name"
+            placeholder={userInfo.lastName}
             fullWidth
             autoComplete="family-name"
             variant="outlined"
@@ -100,51 +140,31 @@ export default function Profile() {
           </Grid>
 
           <Grid item xs={12} sm={6} m={5}>
+          <Typography variant='h6'>
+     Display Name
+      </Typography>
+      <p></p>
           <TextField
             required
             id="displayName"
             name="displayName"
-            label="Display name"
+            placeholder={userInfo.displayName}
             fullWidth
             autoComplete="display-name"
             variant="outlined"
             onChange={(e) => setDisplayName(e.target.value)}
           />
         </Grid>
-
         <Grid item xs={12} sm={6} m={5}>
-          <TextField
-            required
-            id="email"
-            name="email"
-            label="Email ID"
-            fullWidth
-            autoComplete="email"
-            variant="outlined"
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </Grid>
-
-        <Grid item xs={12} sm={6} m={5}>
-          <TextField
-            required
-            id="firstName"
-            name="firstName"
-            label="First name"
-            fullWidth
-            autoComplete="given-name"
-            variant="outlined"
-            onChange={(e) => setFirstName(e.target.value)}
-          />
-        </Grid>
-
-
-        <Grid item xs={12} sm={6} m={5}>
+        <Typography variant='h6'>
+      Year
+      </Typography>
+      <p></p>
           <TextField
             required
             id="year"
             name="year"
-            label="Current Year"
+            placeholder={userInfo.year}
             fullWidth
             autoComplete="year"
             variant="outlined"
@@ -152,22 +172,30 @@ export default function Profile() {
           />
           </Grid>
         <Grid item xs={12} sm={6} m={5}>
+        <Typography variant='h6'>
+      Semester
+      </Typography>
+      <p></p>
           <TextField
             required
             id="semester"
             name="semester"
-            label="Semester"
+            placeholder={userInfo.semester}
             fullWidth
             variant="outlined"
             onChange={(e) => setSemester(e.target.value)}
           />
         </Grid>
         <Grid item xs={12} m={5}>
+        <Typography variant='h6'>
+      Major
+      </Typography>
+      <p></p>
           <TextField
             required
             id="major"
             name="major"
-            label="Major"
+            placeholder={userInfo.major}
             fullWidth
             autoComplete="major"
             variant="outlined"
@@ -175,10 +203,14 @@ export default function Profile() {
           />
         </Grid>
         <Grid item xs={12} m={5}>
+        <Typography variant='h6'>
+      Minor
+      </Typography>
+      <p></p>
           <TextField
             id="minor"
             name="minor"
-            label="Minor"
+            placeholder={userInfo.minor}
             fullWidth
             autoComplete="minor"
             variant="outlined"
@@ -186,10 +218,14 @@ export default function Profile() {
           />
         </Grid>
         <Grid item xs={12} sm={6} m={5}>
+        <Typography variant='h6'>
+      Other Programmes
+      </Typography>
+      <p></p>
           <TextField
             id="other programmes"
             name="other programmes"
-            label="Other Programmes"
+            placeholder={userInfo.otherProgrammes}
             fullWidth
             autoComplete="other programmes"
             variant="outlined"
@@ -208,6 +244,7 @@ export default function Profile() {
         <Button variant="outlined" 
         startIcon={<DeleteIcon />}
         sx ={{m: 4}}
+        //onClick={getInfo}
         >
         Delete Account
         </Button>

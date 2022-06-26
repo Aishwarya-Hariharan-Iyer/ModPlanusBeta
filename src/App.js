@@ -1,42 +1,3 @@
-/**
-import './App.css';
-import SignUp from './authentication/SignUp';
-import SignIn from './authentication/SignIn';
-import SignOut from './authentication/SignOut';
-import Nav from './Nav';
-import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
-import Home from './homepage/Home';
-import Planner from './module-planner/planner-main';
-import Calculator from './cap-calculator/calculator';
-import Dashboard from './dashboard/Dashboard';
-import MiniDrawer from './dashboard/MinivariantDrawer';
-
-function App() {
-
-  const rootElement = document.getElementById("root");
-
-    return (
-      <Router>
-      <div className='App'>
-        <MiniDrawer/>
-        <Routes>
-        <Route path='/home' element={<Home/>}/>
-        <Route path='/signin' element={<SignIn/>}/>
-        <Route path='/signup' element={<SignUp/>}/>
-        <Route path='/signout' element={<SignOut/>}/>
-        <Route path='/planner' element={<Planner/>}/>
-        <Route path='/calculator' element={<Calculator/>}/>
-        <Route path='/dashboard' element = {<Dashboard/>}/>
-      </Routes>
-      </div>
-      </Router>
-    
-    );
-  }
-
-export default App;
-*/
-
 import * as React from 'react';
 import { styled, useTheme } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -58,13 +19,15 @@ import SignIn from './authentication/SignIn';
 import SignOut from './authentication/SignOut';
 import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
 import Home from './homepage/Home';
-import Profile from './profile-page/Profile';
 import Planner from './module-planner/planner-main';
 import Calculator from './cap-calculator/calculator';
 import Dashboard from './dashboard/Dashboard';
-import { auth } from "./authentication/firebase-config";
-import {useState} from "react";
-import { onAuthStateChanged } from "firebase/auth";
+import NotFoundPage from './error-pages/NotFoundPage';
+import Profile from './profile-page/Profile';
+import 'firebase/compat/auth';
+import 'firebase/compat/database';
+import RightButtons from './dashboard/RightButtons';
+import FeedbackForm from './feedback-form/FeedbackForm';
 
 const drawerWidth = 240;
 
@@ -137,11 +100,6 @@ export default function App() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
-  const [user, setUser] = useState({});
-    onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    })
-
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -150,6 +108,9 @@ export default function App() {
     setOpen(false);
   };
 
+
+  //const email = firebase.auth().currentUser.email;
+
   return (
     <Router>
     <div className='App'>
@@ -157,6 +118,7 @@ export default function App() {
       <CssBaseline />
       <AppBar position="fixed" open={open}>
         <Toolbar>
+        <Box display='flex' flexGrow={1}>
           <IconButton
             color="inherit"
             aria-label="open drawer"
@@ -170,9 +132,11 @@ export default function App() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            Welcome to ModPlaNUS <p> {user?.email} </p>
+            WELCOME TO MODPLANUS!
           </Typography>
-        </Toolbar>
+          </Box>
+          <RightButtons/>
+           </Toolbar>
       </AppBar>
       <Drawer variant="permanent" open={open}>
         <DrawerHeader>
@@ -193,8 +157,10 @@ export default function App() {
         <Route path='/planner' element={<Planner/>}/>
         <Route path='/calculator' element={<Calculator/>}/>
         <Route path='/dashboard' element = {<Dashboard/>}/>
-        <Route path='/account' element = {<Profile/>}/>
+        <Route path='/feedbackform' element = {<FeedbackForm/>}/>
         <Route path='/' element = {<Dashboard/>}/>
+        <Route path='/account' element = {<Profile/>}/>
+        <Route path="*" element={<NotFoundPage/>} />
       </Routes>
       </Box> 
     </Box>
