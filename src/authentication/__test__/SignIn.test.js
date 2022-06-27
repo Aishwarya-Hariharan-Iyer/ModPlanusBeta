@@ -32,7 +32,7 @@ describe("login", () => {
         expect(validateInput(text)).toBe(false);
     });
 
-    it("password length", () => {
+    it("accurate password length", () => {
         const text = "text12345678";
         expect(validatepass(text)).toBe(true);
     });
@@ -48,7 +48,7 @@ describe("login", () => {
         expect(emailInputNode.getAttribute("name")).toBe("email");
     });
 
-    it("email input shoudl accept test", () => {
+    it("email input should accept test", () => {
         const { getByLabelText, getByText } = render(<SignIn/>);
         const emailInputNode = getByLabelText("Email Address");
         expect(emailInputNode.value).toMatch("");

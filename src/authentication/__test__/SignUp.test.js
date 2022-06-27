@@ -48,7 +48,7 @@ describe("login", () => {
         expect(emailInputNode.getAttribute("name")).toBe("email");
     });
 
-    it("email input shoudl accept test", () => {
+    it("email input should accept test", () => {
         const { getByLabelText } = render(<SignUp/>);
         const emailInputNode = getByLabelText("Email Address");
         expect(emailInputNode.value).toMatch("");
@@ -68,7 +68,7 @@ describe("login", () => {
 
 /** 
 it("matches snapshot", () => {
-    const tree =renderer.create(<signIn></signIn>).toJSON();
+    const tree =renderer.create(<SignUp></SignUp>).toJSON();
     expect(tree).toMatchSnapshot();
 })*/
 
