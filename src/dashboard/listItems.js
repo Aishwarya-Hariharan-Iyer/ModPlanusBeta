@@ -53,6 +53,15 @@ export default function ListItems(){
       goTo('/signin');
     }
   };
+
+  const goToChatroom = () =>{ 
+    let path = `/Chatroom`; 
+    if(user!==null){
+      goTo(path);
+    }else{
+      goTo('/signin');
+    }
+  };
   
   return (
   <List>
@@ -80,7 +89,7 @@ export default function ListItems(){
       </ListItemIcon>
       <ListItemText primary="Module Information" />
     </ListItemButton>
-    <ListItemButton>
+    <ListItemButton onClick={goToChatroom}>
       <ListItemIcon>
         <MessageIcon />
       </ListItemIcon>
