@@ -22,12 +22,11 @@ export default function Planner() {
   const [searchData, setSearchData] = React.useState([]);
   const [preclusions, setPreclusions] = React.useState("");
   const [corequisites, setCorequisites] = React.useState("");
-  const [prerequisites, setPrerequsiites] = React.useState([]);
+  const [prerequisites, setPrerequsites] = React.useState([]);
   const [fulfillReqs, setFulfillReqs] = React.useState([]);
   let mods = "";
   let eligibleMods = ['CS1101S'];
-  const [warning, setWarning] = React.useState("");
-  const [warning2, setWarning2] = React.useState("");
+  const [warnings, setWarnings] = React.useState("");
 
 
 React.useEffect(
@@ -47,78 +46,112 @@ function searchMod(m){
 
 
 
-  function addModule(code, grade) {
-    mods = mods + "; " + code;
-    searchMod(code);
-    setCorequisites(searchData.corequisite);
-    setPreclusions(searchData.preclusion);
-    setPrerequsiites(searchData.prerequisite);
-    const modsAll = searchData.fulfillRequirements;
-    setFulfillReqs(modsAll);
-    console.log(searchData);
-    const res = new RegExp(/(\b[A-Z0-9][A-Z0-9]+|\b[A-Z]\b)/g);
+function addModule(code, grade) {
+  mods = mods + "; " + code;
+  searchMod(code);
+  setCorequisites(searchData.corequisite);
+  setPreclusions(searchData.preclusion);
+  setPrerequsites(searchData.prerequisite);
+  const modsAll = searchData.fulfillRequirements;
+  setFulfillReqs(modsAll);
+  //console.log(searchData);
+  const res = new RegExp(/(\b[A-Z0-9][A-Z0-9]+|\b[A-Z]\b)/g);
 
-    const modsPlanned = Module.map(x => x.code);
+  const modsPlanned = Module.map(x => x.code);
 
 
-    let precMods = [];
-    let coreqMods = [];
-    let containsPreclusions = false;
-    let containsCorequisites = true;
+  let precMods = [];
+  let coreqMods = [];
+  let containsPreclusions = false;
+  let containsCorequisites = true;
+  let isEligibleByPrereqs = true;
 
-    if(preclusions!==undefined){
-      precMods = preclusions.match(res);
-      containsPreclusions = modsPlanned.some(element => {
-        return precMods.includes(element);
-      });
-    }
+  if(preclusions){
+    precMods = preclusions.match(res);
+    containsPreclusions = modsPlanned.some(element => {
+      return precMods.includes(element);
+    });
+  }
 
-    if(corequisites!==undefined){
-      coreqMods = corequisites.match(res);
-      containsCorequisites = coreqMods.every(element => {
-        return modsPlanned.includes(element);
-      });
-    }
+  if(corequisites){
+    coreqMods = corequisites.match(res);
+    containsCorequisites = coreqMods.every(element => {
+      return modsPlanned.includes(element);
+    });
+  }
 
-    if(fulfillReqs!==undefined){
-      eligibleMods = eligibleMods.concat(fulfillReqs);
-      console.log(eligibleMods);
-    }
+  if(prerequisites){
+    isEligibleByPrereqs = eligibleMods.includes(code);
+  }
 
-    if(containsCorequisites && !containsPreclusions && !modsPlanned.includes(code) && eligibleMods.includes(code)){
-      const newModule = [
-        ...Module,
-        {
-          code: code,
-          grade: grade,
-          preclusions: preclusions
-        }
-      ];
+  if(fulfillReqs){
+    eligibleMods = eligibleMods.concat(fulfillReqs);
+    //console.log(eligibleMods);
+  }
 
-      setModule(newModule);
 
-    } else {
-      if(containsPreclusions){
 
+
+  if(containsCorequisites && !containsPreclusions && !modsPlanned.includes(code) && eligibleMods.includes(code)){
+    const newModule = [
+      ...Module,
+      {
+        code: code,
+        grade: grade,
+        preclusions: preclusions
       }
-      if(!containsCorequisites) {
-        const msg = "WARNING: Remember to add these corequisites too: " + corequisites;
-        setWarning(msg); 
-      }
-      if(modsPlanned.includes(code)){
-      }
-      else{
-        const msg = "WARNING: Have you completed all these prerequisites ? " + prerequisites;
-        setWarning2(msg);
-      }
+    ];
 
-
-    }
-
-
-
+    setModule(newModule);
 
   }
+
+  if(modsPlanned.includes(code)){
+    console.log("ERROR! Have you added this module twice? " + code);
+    const newWarning = [...warnings, "ERROR! Have you added this module twice? " + code];
+    setWarnings(newWarning);
+  }
+  
+  else {
+    if(containsPreclusions){
+      if(preclusions){
+        console.log("PRECLUSION WARNING: Make sure you have not added ...  " + precMods);
+        const newWarning = [...warnings, "PRECLUSION WARNING: Make sure you have not added ...  " + preclusions];
+        setWarnings(newWarning);
+      }
+
+    }
+    if(!containsCorequisites) {
+      if(corequisites){
+        console.log("COREQUISITE WARNING: Remember to add these corequisites too: " + corequisites);
+        const newWarning = [...warnings, "COREQUISITE WARNING: Remember to add these corequisites too: " + corequisites];
+        setWarnings(newWarning);
+      }
+    }
+    if(!isEligibleByPrereqs) {
+      if(prerequisites){
+        console.log("PREREQUISITE WARNING: Remember to fulfill these prerequsiites: " + prerequisites);
+        const newWarning = [...warnings, "PREREQUISITE WARNING: Remember to fulfill these prerequsiites: " + prerequisites];
+        setWarnings(newWarning);
+      }
+    }
+
+    //console.log(warnings);
+
+    const newModule = [
+      ...Module,
+      {
+        code: code,
+        grade: grade,
+        preclusions: preclusions
+      }
+    ];
+
+    setModule(newModule);
+
+  }
+
+}
   return (
     <>
       <div className="Planner" style={PlannerMain.planner}>
@@ -136,9 +169,9 @@ function searchMod(m){
           WARNINGS
         </Typography>
         <Typography variant="body2">
-          {warning}
+         
           <br />
-          {warning2}
+         
         </Typography>
       </CardContent>
     </Card>
