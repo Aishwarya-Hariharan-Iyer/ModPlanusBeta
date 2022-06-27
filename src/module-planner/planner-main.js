@@ -73,7 +73,7 @@ function searchMod(m){
     setPrerequsites(searchData.prerequisite);
     const modsAll = searchData.fulfillRequirements;
     setFulfillReqs(modsAll);
-    console.log(searchData);
+    //console.log(searchData);
     const res = new RegExp(/(\b[A-Z0-9][A-Z0-9]+|\b[A-Z]\b)/g);
 
     const modsPlanned = Module.map(x => x.code);
@@ -105,7 +105,7 @@ function searchMod(m){
 
     if(fulfillReqs){
       eligibleMods = eligibleMods.concat(fulfillReqs);
-      console.log(eligibleMods);
+      //console.log(eligibleMods);
     }
 
 
@@ -126,6 +126,7 @@ function searchMod(m){
     }
 
     if(modsPlanned.includes(code)){
+      console.log("ERROR! Have you added this module twice? " + code);
       const newWarning = [...warnings, "ERROR! Have you added this module twice? " + code];
       setWarnings(newWarning);
     }
@@ -133,6 +134,7 @@ function searchMod(m){
     else {
       if(containsPreclusions){
         if(preclusions){
+          console.log("PRECLUSION WARNING: Make sure you have not added ...  " + precMods);
           const newWarning = [...warnings, "PRECLUSION WARNING: Make sure you have not added ...  " + preclusions];
           setWarnings(newWarning);
         }
@@ -140,18 +142,20 @@ function searchMod(m){
       }
       if(!containsCorequisites) {
         if(corequisites){
+          console.log("COREQUISITE WARNING: Remember to add these corequisites too: " + corequisites);
           const newWarning = [...warnings, "COREQUISITE WARNING: Remember to add these corequisites too: " + corequisites];
           setWarnings(newWarning);
         }
       }
       if(!isEligibleByPrereqs) {
         if(prerequisites){
+          console.log("PREREQUISITE WARNING: Remember to fulfill these prerequsiites: " + prerequisites);
           const newWarning = [...warnings, "PREREQUISITE WARNING: Remember to fulfill these prerequsiites: " + prerequisites];
           setWarnings(newWarning);
         }
       }
 
-      console.log(warnings);
+      //console.log(warnings);
 
       const newModule = [
         ...Module,
@@ -170,16 +174,13 @@ function searchMod(m){
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    addModule(modName, gradeName);
+    addModule(info, addGradeText);
   }
 
   return (
     
     <>
       <div className="Planner" style={PlannerMain.planner}>
-      
-      let module = "";
-      let grade = "";
 
         <h1>Plan your modules!</h1>
 
