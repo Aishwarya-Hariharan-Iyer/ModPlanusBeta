@@ -5,14 +5,19 @@ import Button from "@mui/material/Button";
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import PlannerMain from './PlannerMain.css';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
+import firebase from 'firebase/compat/app';
+import { db } from "../authentication/firebase-config";
+import {
+  setDoc,
+  doc,
+} from "firebase/firestore";
 
 
 
 const API_NUSMODS_URL = 'https://api.nusmods.com/v2/2021-2022/moduleList.json';
-const API_MODULE_INFO = 'https://api.nusmods.com/v2/2021-2022/modules/'
+const API_MODULE_INFO = 'https://api.nusmods.com/v2/2021-2022/modules/';
+
 
 export default function Planner() {
   const [addGradeText, setAddGradeText] = useState('');
@@ -22,21 +27,33 @@ export default function Planner() {
   const [searchData, setSearchData] = React.useState([]);
   const [preclusions, setPreclusions] = React.useState("");
   const [corequisites, setCorequisites] = React.useState("");
-  const [prerequisites, setPrerequsiites] = React.useState([]);
+  const [prerequisites, setPrerequsites] = React.useState([]);
   const [fulfillReqs, setFulfillReqs] = React.useState([]);
   let mods = "";
-  let eligibleMods = ['CS1101S'];
-  const [warning, setWarning] = React.useState("");
-  const [warning2, setWarning2] = React.useState("");
+  let eligibleMods = ['CS1101S', 'MA1521', 'CS1231S'];
+  const [warnings, setWarnings] = React.useState([]);
+  let modName = "";
+  let gradeName = "";
+
+
+  const user = firebase.auth().currentUser;
 
 
 React.useEffect(
   () => {
       fetch(API_NUSMODS_URL)
       .then(res => res.json())
-      .then(d => setData(d))
-  }, []
-);
+      .then(d => setData(d));
+      if(user){
+      const userRef = doc(db, "users-planner", user.uid);
+      const userData = {
+        plannedMods: mods,
+        eligibleMods: eligibleMods,
+        warnings: warnings,
+      }
+      setDoc(userRef, userData);
+    }
+  },);
 
 function searchMod(m){
   fetch(`${API_MODULE_INFO}${m}.json`)
@@ -44,6 +61,7 @@ function searchMod(m){
   .then(d => setSearchData(d))
 }
 
+<Typography>{warnings}</Typography>
 
 
 
@@ -52,7 +70,7 @@ function searchMod(m){
     searchMod(code);
     setCorequisites(searchData.corequisite);
     setPreclusions(searchData.preclusion);
-    setPrerequsiites(searchData.prerequisite);
+    setPrerequsites(searchData.prerequisite);
     const modsAll = searchData.fulfillRequirements;
     setFulfillReqs(modsAll);
     console.log(searchData);
@@ -65,25 +83,33 @@ function searchMod(m){
     let coreqMods = [];
     let containsPreclusions = false;
     let containsCorequisites = true;
+    let isEligibleByPrereqs = true;
 
-    if(preclusions!==undefined){
+    if(preclusions){
       precMods = preclusions.match(res);
       containsPreclusions = modsPlanned.some(element => {
         return precMods.includes(element);
       });
     }
 
-    if(corequisites!==undefined){
+    if(corequisites){
       coreqMods = corequisites.match(res);
       containsCorequisites = coreqMods.every(element => {
         return modsPlanned.includes(element);
       });
     }
 
-    if(fulfillReqs!==undefined){
+    if(prerequisites){
+      isEligibleByPrereqs = eligibleMods.includes(code);
+    }
+
+    if(fulfillReqs){
       eligibleMods = eligibleMods.concat(fulfillReqs);
       console.log(eligibleMods);
     }
+
+
+
 
     if(containsCorequisites && !containsPreclusions && !modsPlanned.includes(code) && eligibleMods.includes(code)){
       const newModule = [
@@ -97,79 +123,93 @@ function searchMod(m){
 
       setModule(newModule);
 
-    } else {
+    }
+
+    if(modsPlanned.includes(code)){
+      const newWarning = [...warnings, "ERROR! Have you added this module twice? " + code];
+      setWarnings(newWarning);
+    }
+    
+    else {
       if(containsPreclusions){
+        if(preclusions){
+          const newWarning = [...warnings, "PRECLUSION WARNING: Make sure you have not added ...  " + preclusions];
+          setWarnings(newWarning);
+        }
 
       }
       if(!containsCorequisites) {
-        const msg = "WARNING: Remember to add these corequisites too: " + corequisites;
-        setWarning(msg); 
+        if(corequisites){
+          const newWarning = [...warnings, "COREQUISITE WARNING: Remember to add these corequisites too: " + corequisites];
+          setWarnings(newWarning);
+        }
       }
-      if(modsPlanned.includes(code)){
-      }
-      else{
-        const msg = "WARNING: Have you completed all these prerequisites ? " + prerequisites;
-        setWarning2(msg);
+      if(!isEligibleByPrereqs) {
+        if(prerequisites){
+          const newWarning = [...warnings, "PREREQUISITE WARNING: Remember to fulfill these prerequsiites: " + prerequisites];
+          setWarnings(newWarning);
+        }
       }
 
+      console.log(warnings);
+
+      const newModule = [
+        ...Module,
+        {
+          code: code,
+          grade: grade,
+          preclusions: preclusions
+        }
+      ];
+
+      setModule(newModule);
 
     }
-
-
-
-
+ 
   }
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    addModule(modName, gradeName);
+  }
+
   return (
+    
     <>
       <div className="Planner" style={PlannerMain.planner}>
-        
+      
+      let module = "";
+      let grade = "";
+
         <h1>Plan your modules!</h1>
 
         <main>
 
-    <Card sx={{ minWidth: 275 }}>
-      <CardContent>
-        <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-          WARNINGS
-        </Typography>
-        <Typography sx={{ mb: 1.5 }} color="red">
-          WARNINGS
-        </Typography>
-        <Typography variant="body2">
-          {warning}
-          <br />
-          {warning2}
-        </Typography>
-      </CardContent>
-    </Card>
-          <Box>
+          <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
             <h2>Add Data</h2>
       <Autocomplete
       disablePortal
-      id="combo-box-demo"
+      id="modules"
+      name="modules"
       options={data}
      // sx={{ width: 300, zIndex: 'modal', borderRadius: '1px'}}
       getOptionLabel = {(option) => option.moduleCode+" : "+option.title } 
       autoSelect = {true}
       renderInput={(params) => <TextField {...params} label={"Module Code"} />}
-      onChange={(event, value) => {
-        setInfo(value); 
+      onChange={(event, value) => { 
         if(value!==null){
-          //console.log('hi');
           setInfo(value.moduleCode);
-          //setPreclusions(value.Preclusion);
-          //setCorequisites(value.Corequisite);
-          //setFulfillReqs(value.Prerequisite);
-        } else {
-          //console.log('nay');
-        }
+          modName = value.moduleCode;
         }}
-      />
+      }
+
+/>
       <p></p>
       
       <Autocomplete
       disablePortal
-      id="combo-box-demo"
+      id="grades"
+      name="grades"
       options={[
         {l: 'A+'},
         {l: 'A'},
@@ -190,14 +230,19 @@ function searchMod(m){
       getOptionLabel = {(option) => option.l} 
       autoSelect = {true}
       renderInput={(params) => <TextField {...params} label={"Predicted Grade"} />}
-      onChange={(event, value) => {setAddGradeText(value.l);}}
+      onChange={(event, value) => {setAddGradeText(value.l); gradeName=value.l;}}
       />
 
       <p></p>
-              <Button variant="contained">
-                <input type="submit" value="Add" onClick={()=>{addModule(info, addGradeText);}}/>
+      <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+                onClick={handleSubmit}
+              >
+                Add Module
               </Button>
-            <p> </p>
           </Box>
 
           <Box>

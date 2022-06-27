@@ -45,7 +45,7 @@ export default function Profile() {
 
       const user = onSnapshot(doc(db, "users-profile", firebase.auth().currentUser.uid), 
       (doc) => {
-        console.log(doc.data());
+        //console.log(doc.data());
         setUserInfo(doc.data());
         });
         return user;
