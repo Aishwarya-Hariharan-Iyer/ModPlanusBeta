@@ -23,7 +23,7 @@ export default function SignOut() {
   let goTo = useNavigate();
 
   const goFirst = () =>{
-    let path = '/';
+    let path = '/home';
     goTo(path);
   }
 
