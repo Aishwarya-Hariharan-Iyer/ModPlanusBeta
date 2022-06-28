@@ -30,13 +30,11 @@ export default function Planner() {
   const [prerequisites, setPrerequsites] = React.useState([]);
   const [fulfillReqs, setFulfillReqs] = React.useState([]);
   let mods = "";
+
   let eligibleMods = ['CS1101S', 'MA1521', 'CS1231S'];
   const [warnings, setWarnings] = React.useState([]);
-  let modName = "";
-  let gradeName = "";
-
-
   const user = firebase.auth().currentUser;
+
 
 
 React.useEffect(
@@ -66,6 +64,7 @@ function searchMod(m){
 
 
 
+
   function addModule(code, grade) {
     
     mods = mods + "; " + code;
@@ -78,7 +77,6 @@ function searchMod(m){
     console.log(searchData);
     const res = new RegExp(/(\b[A-Z0-9][A-Z0-9]+|\b[A-Z]\b)/g);
 
-    const modsPlanned = Module.map(x => x.code);
 
 
     let precMods = [];
@@ -123,7 +121,7 @@ function searchMod(m){
         }
       ];
 
-      setModule(newModule);
+
 
     }
 
@@ -141,7 +139,7 @@ function searchMod(m){
           setWarnings(newWarning);
         }
 
-      }
+
       if(!containsCorequisites) {
         if(corequisites){
           console.log("COREQUISITE WARNING: Remember to add these corequisites too: " + corequisites);
@@ -174,10 +172,21 @@ function searchMod(m){
  
   }
 
+    ];
+
+    setModule(newModule);
+
+  }
+
+ 
+
   const handleSubmit = (event) => {
     event.preventDefault();
     addModule(info, addGradeText);
   }
+
+
+}
 
   return (
     
@@ -188,8 +197,8 @@ function searchMod(m){
 
         <main>
 
-          <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
-            <h2>Add Data</h2>
+
+      <h2>Add Data</h2>
       <Autocomplete
       disablePortal
       id="modules"
