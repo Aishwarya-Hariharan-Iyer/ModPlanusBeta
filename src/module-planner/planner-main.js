@@ -41,9 +41,10 @@ export default function Planner() {
 
 React.useEffect(
   () => {
-      fetch(API_NUSMODS_URL)
+      fetch(API_MODULE_INFO)
       .then(res => res.json())
-      .then(d => setData(d));
+      .then(d => setData(d))
+      .then(x => console.log(x));
       if(user){
       const userRef = doc(db, "users-planner", user.uid);
       const userData = {
@@ -66,6 +67,7 @@ function searchMod(m){
 
 
   function addModule(code, grade) {
+    
     mods = mods + "; " + code;
     searchMod(code);
     setCorequisites(searchData.corequisite);
@@ -73,7 +75,7 @@ function searchMod(m){
     setPrerequsites(searchData.prerequisite);
     const modsAll = searchData.fulfillRequirements;
     setFulfillReqs(modsAll);
-    //console.log(searchData);
+    console.log(searchData);
     const res = new RegExp(/(\b[A-Z0-9][A-Z0-9]+|\b[A-Z]\b)/g);
 
     const modsPlanned = Module.map(x => x.code);
@@ -100,7 +102,7 @@ function searchMod(m){
     }
 
     if(prerequisites){
-      isEligibleByPrereqs = eligibleMods.includes(code);
+      isEligibleByPrereqs = eligibleMods.contains(code);
     }
 
     if(fulfillReqs){
