@@ -97,31 +97,55 @@ React.useEffect(
     const res = new RegExp(/(\b[A-Z0-9][A-Z0-9]+|\b[A-Z]\b)/g);
     const mods = Module.map(x => x.code);
 
+    
+    //preclusion condition to be matched
     const preclusions = p.preclusion;
     let precMods = [];
     
     if(preclusions){
       precMods = preclusions.match(res);
       setPreclusionMods(precMods);
+      if(mods.some(element => {
+        return precMods.includes(element);})){
+        console.log("PRECLUSIONS ERRORS: Did you finish this preclusions condition? " + preclusions);
+      }
     }
 
+
+
+    //corequisite condition to be matched
     const corequisites = p.corequisite;
     let coreqMods = [];
     
     if(corequisites){
       coreqMods = corequisites.match(res);
       setCorequisiteMods(coreqMods);
+      if(coreqMods.every(element => {
+        return mods.includes(element);
+      })){
+        console.log("COREQUISITE ERRORS: Did you finish this corequisite condition? " + corequisites);
+      }
     }
 
-    const fulfillReqs = p.fulfillRequirements;
-    if(fulfillReqs){
-      let newEligibleMods = [...eligibleMods, fulfillReqs]
-      setEligibleMods(newEligibleMods);
-    }
-  
+    //check if prerequisites are matched
+    const prerequisites = p.prerequisite;
+    if(prerequisites){
+      if(!eligibleMods.includes(code)){
+        console.log("PREREQUISITE ERRORS: Did you finish this prerequisite condition? " + prerequisites);
+      }
   }
+    
+     const fulfillReqs = p.fulfillRequirements;
+     if(fulfillReqs){
+       let newEligibleMods = [...eligibleMods, fulfillReqs]
+       setEligibleMods(newEligibleMods);
+     }
 
-  }, [p, Module, modsPlanned]);
+     //addToList(code);
+  
+}
+  
+}, [p]);
 
   React.useEffect(()=>{
 
@@ -155,42 +179,13 @@ function handleAddition(code){
    .then(res => setP(res)); 
 }
 
-React.useEffect(()=>{
-  if(selected){
-    completeAddition(modCode);
-  }
-}, [selected, containsCoreqs, containsPrecs, containsPrereqs])
-
-function completeAddition(code){
-
-  
-  if(Module.map(x=>x.code).includes(code)){
-    console.log(modCode);
-    console.log(code);
-    console.log("ERROR: CONTAINS THE MODULE ALREADY!");
-  }
-  if(!containsPrereqs){
-    console.log("ERROR: UNFULFILLED PREREQS!");
-    console.log(modCode);
-    console.log(p.moduleCode);
-    console.log(p.prerequisite);
-  }
-  if(!containsCoreqs){
-    console.log("ERROR: UNFULFILLED COREQS!");
-    console.log(modCode);
-    console.log(code);
-  }
-  else{
-    addToList(code);
-  }
-  setSelected(false);
-}
 
 function addToList(code){
   const newModule = [
     ...Module,
     {
       code: code,
+
     }
   ];
 
@@ -203,9 +198,16 @@ function addToList(code){
 
   function addModule(code) {
     
-    handleAddition(code);
+    const mods = Module.map(x=>x.code);
+
+    if(mods.includes(code)){
+      console.log("You cannot add the same module twice! " + code);
+    } else {
+      handleAddition(code);
+      addToList(code);
+    }
     setSelected(true);
-    completeAddition(code);
+    //completeAddition(code);
 
   }
 
