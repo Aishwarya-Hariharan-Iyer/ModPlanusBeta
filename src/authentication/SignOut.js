@@ -13,35 +13,17 @@ import { auth } from "./firebase-config";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
-function Copyright(props) {
-  return (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
-      {...props}
-    >
-      {"Copyright © "}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
-
 const theme = createTheme();
 
 export default function SignOut() {
   const signout = async () => {
-    await signOut(auth);
+    await signOut(auth).then(goFirst).then(console.log("done"));
   };
 
   let goTo = useNavigate();
 
   const goFirst = () =>{
-    let path = '/';
+    let path = '/home';
     goTo(path);
   }
 
@@ -84,19 +66,17 @@ export default function SignOut() {
             <Box
               component="form"
               noValidate
-              onClick={signout}
               sx={{ mt: 1 }}
+              onClick = {signout}
             >
               <Button
                 type="submit"
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-                onClick = {goFirst}
               >
                 SignOut
               </Button>
-              <Copyright sx={{ mt: 5 }} />
             </Box>
           </Box>
         </Grid>
