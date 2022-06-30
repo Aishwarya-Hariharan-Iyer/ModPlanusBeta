@@ -15,168 +15,203 @@ import {
 
 
 
+//NUSMODS API to retrieve the data for autocomplete from
 const API_NUSMODS_URL = 'https://api.nusmods.com/v2/2021-2022/moduleList.json';
+
+//NUSMODS API to retrieve the data for each module
 const API_MODULE_INFO = 'https://api.nusmods.com/v2/2021-2022/modules/';
 
-
+/**
+ * function to render the planner page along with all of its components
+ */
 export default function Planner() {
-  const [addGradeText, setAddGradeText] = useState('');
+
+  //the grade entered of planned module to be added
+  const [gradePlanned, setGradePlanned] = useState('');
+ 
+  //the module planned to be added
   const [Module, setModule] = useState([]);
-  const [info, setInfo] = useState('');
+
+  //module code of planned module to be added
+  const [modCode, setModCode] = useState('');
+
+  //data from the API set for Autocomplete information
   const [data, setData] = React.useState([]);
-  const [searchData, setSearchData] = React.useState([]);
-  const [preclusions, setPreclusions] = React.useState("");
-  const [corequisites, setCorequisites] = React.useState("");
-  const [prerequisites, setPrerequsites] = React.useState([]);
-  const [fulfillReqs, setFulfillReqs] = React.useState([]);
-  let mods = "";
-  let eligibleMods = ['CS1101S', 'MA1521', 'CS1231S'];
+
+  //set preclusion, prerequsiites, corequisites and eligibleMods
+  const [prerequisiteMods, setPrerequisiteMods] = React.useState([]);
+  const [preclusionMods, setPreclusionMods] = React.useState([]);
+  const [corequisiteMods, setCorequisiteMods] = React.useState([]);
+  const [eligibleMods, setEligibleMods] = React.useState([]);
+
+  //truth state of the completion
+  const [containsCoreqs, setContainsCoreqs] = React.useState(true);
+  const [containsPrereqs, setContainsPrereqs] = React.useState(true);
+  const [containsPrecs, setContainsPrecs] = React.useState(false);
+
+  //truth state of selection
+  const [selected, setSelected] = React.useState(false);
+
+  //string of module planned seperated by semicolon
+  let modsPlanned = "";
+  
+  //set of eligible modules the student is allowed to take (all the preliminary modules are added here)
+  //let eligibleMods = ['CS1101S', 'MA1521', 'CS1231S'];
+
+
+  //the list of warnings to be displayed to user
   const [warnings, setWarnings] = React.useState([]);
-  let modName = "";
-  let gradeName = "";
 
+  //a cariable to conduct trials with
+  const [p, setP] = React.useState('');
 
+  //the current user of the module
   const user = firebase.auth().currentUser;
 
 
+//for when the page renders to help set the options for autocomplete
 React.useEffect(
   () => {
-      fetch(API_MODULE_INFO)
+      fetch(API_NUSMODS_URL)
       .then(res => res.json())
-      .then(d => setData(d))
-      .then(x => console.log(x));
+      .then(d => setData(d));
+
+      //create user profile in firestore
       if(user){
       const userRef = doc(db, "users-planner", user.uid);
       const userData = {
-        plannedMods: mods,
-        eligibleMods: eligibleMods,
+        plannedMods: modsPlanned,
         warnings: warnings,
       }
       setDoc(userRef, userData);
     }
   },);
 
-function searchMod(m){
-  fetch(`${API_MODULE_INFO}${m}.json`)
-  .then(res => res.json())
-  .then(d => setSearchData(d))
+  
+  React.useEffect(()=>{
+
+    if(p){
+
+    const code = p.moduleCode;
+    setModCode(code);
+    const res = new RegExp(/(\b[A-Z0-9][A-Z0-9]+|\b[A-Z]\b)/g);
+    const mods = Module.map(x => x.code);
+
+    const preclusions = p.preclusion;
+    let precMods = [];
+    
+    if(preclusions){
+      precMods = preclusions.match(res);
+      setPreclusionMods(precMods);
+    }
+
+    const corequisites = p.corequisite;
+    let coreqMods = [];
+    
+    if(corequisites){
+      coreqMods = corequisites.match(res);
+      setCorequisiteMods(coreqMods);
+    }
+
+    const fulfillReqs = p.fulfillRequirements;
+    if(fulfillReqs){
+      let newEligibleMods = [...eligibleMods, fulfillReqs]
+      setEligibleMods(newEligibleMods);
+    }
+  
+  }
+
+  }, [p, Module, modsPlanned]);
+
+  React.useEffect(()=>{
+
+    const code = modCode;
+    const mods = Module.map(x => x.code);
+
+    setContainsPrecs(
+      mods.some(element => {
+           return preclusionMods.includes(element);
+      })
+    );
+
+    setContainsCoreqs(
+      corequisiteMods.every(element => {
+        return mods.includes(element);
+      })
+    );
+
+    setContainsPrereqs(
+      eligibleMods.includes(code)
+    );
+
+
+  }, [eligibleMods, corequisiteMods, preclusionMods])
+
+
+//retrieve data regarding the module
+function handleAddition(code){
+   const response = fetch(`${API_MODULE_INFO}${code}.json`)
+   .then(res => res.json())
+   .then(res => setP(res)); 
+}
+
+React.useEffect(()=>{
+  if(selected){
+    completeAddition(modCode);
+  }
+}, [selected, containsCoreqs, containsPrecs, containsPrereqs])
+
+function completeAddition(code){
+
+  
+  if(Module.map(x=>x.code).includes(code)){
+    console.log(modCode);
+    console.log(code);
+    console.log("ERROR: CONTAINS THE MODULE ALREADY!");
+  }
+  if(!containsPrereqs){
+    console.log("ERROR: UNFULFILLED PREREQS!");
+    console.log(modCode);
+    console.log(p.moduleCode);
+    console.log(p.prerequisite);
+  }
+  if(!containsCoreqs){
+    console.log("ERROR: UNFULFILLED COREQS!");
+    console.log(modCode);
+    console.log(code);
+  }
+  else{
+    addToList(code);
+  }
+  setSelected(false);
+}
+
+function addToList(code){
+  const newModule = [
+    ...Module,
+    {
+      code: code,
+    }
+  ];
+
+  setModule(newModule);
 }
 
 <Typography>{warnings}</Typography>
 
 
 
-  function addModule(code, grade) {
+  function addModule(code) {
     
-    mods = mods + "; " + code;
-    searchMod(code);
-    setCorequisites(searchData.corequisite);
-    setPreclusions(searchData.preclusion);
-    setPrerequsites(searchData.prerequisite);
-    const modsAll = searchData.fulfillRequirements;
-    setFulfillReqs(modsAll);
-    console.log(searchData);
-    const res = new RegExp(/(\b[A-Z0-9][A-Z0-9]+|\b[A-Z]\b)/g);
+    handleAddition(code);
+    setSelected(true);
+    completeAddition(code);
 
-    const modsPlanned = Module.map(x => x.code);
-
-
-    let precMods = [];
-    let coreqMods = [];
-    let containsPreclusions = false;
-    let containsCorequisites = true;
-    let isEligibleByPrereqs = true;
-
-    if(preclusions){
-      precMods = preclusions.match(res);
-      containsPreclusions = modsPlanned.some(element => {
-        return precMods.includes(element);
-      });
-    }
-
-    if(corequisites){
-      coreqMods = corequisites.match(res);
-      containsCorequisites = coreqMods.every(element => {
-        return modsPlanned.includes(element);
-      });
-    }
-
-    if(prerequisites){
-      isEligibleByPrereqs = eligibleMods.contains(code);
-    }
-
-    if(fulfillReqs){
-      eligibleMods = eligibleMods.concat(fulfillReqs);
-      //console.log(eligibleMods);
-    }
-
-
-
-
-    if(containsCorequisites && !containsPreclusions && !modsPlanned.includes(code) && eligibleMods.includes(code)){
-      const newModule = [
-        ...Module,
-        {
-          code: code,
-          grade: grade,
-          preclusions: preclusions
-        }
-      ];
-
-      setModule(newModule);
-
-    }
-
-    if(modsPlanned.includes(code)){
-      console.log("ERROR! Have you added this module twice? " + code);
-      const newWarning = [...warnings, "ERROR! Have you added this module twice? " + code];
-      setWarnings(newWarning);
-    }
-    
-    else {
-      if(containsPreclusions){
-        if(preclusions){
-          console.log("PRECLUSION WARNING: Make sure you have not added ...  " + precMods);
-          const newWarning = [...warnings, "PRECLUSION WARNING: Make sure you have not added ...  " + preclusions];
-          setWarnings(newWarning);
-        }
-
-      }
-      if(!containsCorequisites) {
-        if(corequisites){
-          console.log("COREQUISITE WARNING: Remember to add these corequisites too: " + corequisites);
-          const newWarning = [...warnings, "COREQUISITE WARNING: Remember to add these corequisites too: " + corequisites];
-          setWarnings(newWarning);
-        }
-      }
-      if(!isEligibleByPrereqs) {
-        if(prerequisites){
-          console.log("PREREQUISITE WARNING: Remember to fulfill these prerequsiites: " + prerequisites);
-          const newWarning = [...warnings, "PREREQUISITE WARNING: Remember to fulfill these prerequsiites: " + prerequisites];
-          setWarnings(newWarning);
-        }
-      }
-
-      //console.log(warnings);
-
-      const newModule = [
-        ...Module,
-        {
-          code: code,
-          grade: grade,
-          preclusions: preclusions
-        }
-      ];
-
-      setModule(newModule);
-
-    }
- 
   }
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    addModule(info, addGradeText);
+    addModule(modCode);
   }
 
   return (
@@ -195,21 +230,20 @@ function searchMod(m){
       id="modules"
       name="modules"
       options={data}
-     // sx={{ width: 300, zIndex: 'modal', borderRadius: '1px'}}
       getOptionLabel = {(option) => option.moduleCode+" : "+option.title } 
       autoSelect = {true}
       renderInput={(params) => <TextField {...params} label={"Module Code"} />}
       onChange={(event, value) => { 
         if(value!==null){
-          setInfo(value.moduleCode);
-          modName = value.moduleCode;
+          setModCode(value.moduleCode);
         }}
       }
 
 />
       <p></p>
       
-      <Autocomplete
+    
+      {/* <Autocomplete
       disablePortal
       id="grades"
       name="grades"
@@ -233,8 +267,9 @@ function searchMod(m){
       getOptionLabel = {(option) => option.l} 
       autoSelect = {true}
       renderInput={(params) => <TextField {...params} label={"Predicted Grade"} />}
-      onChange={(event, value) => {setAddGradeText(value.l); gradeName=value.l;}}
-      />
+      onChange={(event, value) => {setGradePlanned(value.l);}}
+      /> */}
+    
 
       <p></p>
       <Button
@@ -255,7 +290,6 @@ function searchMod(m){
                 <tr>
                   <th>No.</th>
                   <th>Modules</th>
-                  <th>Grade</th>
                 </tr>
               </thead>
               <tbody>
@@ -263,7 +297,6 @@ function searchMod(m){
                   <tr key={Mod.code}>
                     <td>{idx + 1}</td>
                     <td>{Mod.code}</td>
-                    <td>{Mod.grade}</td>
                   </tr>
                 ))}
               </tbody>
