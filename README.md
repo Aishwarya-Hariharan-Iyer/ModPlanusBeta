@@ -7,4 +7,4 @@ Please test the app locally by following these steps:
 1. Go to your terminal and run git clone <copy-paste repo link here>
 2. cd ModPlaNUS
 3. npm install
-4. npm run
+4. npm start
