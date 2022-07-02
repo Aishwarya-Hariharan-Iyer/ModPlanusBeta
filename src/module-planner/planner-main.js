@@ -14,7 +14,12 @@ import Typography from '@mui/material/Typography';
 const API_NUSMODS_URL = 'https://api.nusmods.com/v2/2021-2022/moduleList.json';
 const API_MODULE_INFO = 'https://api.nusmods.com/v2/2021-2022/modules/'
 
+
+
+
+
 export default function Planner() {
+
   const [addGradeText, setAddGradeText] = useState('');
   const [Module, setModule] = useState([]);
   const [info, setInfo] = useState('');
@@ -28,6 +33,9 @@ export default function Planner() {
   let eligibleMods = ['CS1101S'];
   const [warning, setWarning] = React.useState("");
   const [warning2, setWarning2] = React.useState("");
+  //const [warningsList, setWarningsList] = React.useState([]);
+  const [warnings, setWarnings] = useState([]);
+  const [newWarningText, setNewWarningText] = React.useState("");                                                                                      
 
 
 React.useEffect(
@@ -45,7 +53,47 @@ function searchMod(m){
 }
 
 
+  function WarningList(props) {
+    const { warnings, setWarnings } = props;
 
+    function handleWarningCompletionToggled(toToggleWarning, toToggleWarningIndex) {
+      const newWarnings = [
+        ...warnings.slice(0, toToggleWarningIndex),
+        {
+          msg: toToggleWarning.msg,
+          isComplete: !toToggleWarning.isComplete
+        },
+        ...warnings.slice(toToggleWarningIndex + 1)
+      ];
+      setWarnings(newWarnings);
+    }
+    return (
+      <table style={{ margin: "0 auto", width: "100%" }}>
+            <thead>
+              <tr>
+                <th>No.</th>
+                <th>Warning</th>
+                <th>dismiss warnings</th>
+              </tr>
+            </thead>
+            <tbody>
+              {warnings.map((warns, index) => (
+                <tr key={warns.msg}>
+                  <td>{index + 1}</td>
+                  <td>{warns.msg}</td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      checked={warns.isComplete}
+                      onChange={() => handleWarningCompletionToggled(warns, index)}
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+    );
+  }
 
   function addModule(code, grade) {
     mods = mods + "; " + code;
@@ -104,18 +152,34 @@ function searchMod(m){
       if(!containsCorequisites) {
         const msg = "WARNING: Remember to add these corequisites too: " + corequisites;
         setWarning(msg); 
+        const newWarnings = [
+          ...warnings,
+          {
+           msg: msg,
+           isComplete: false
+
+          }
+        ];
+        setWarnings(newWarnings);
       }
       if(modsPlanned.includes(code)){
       }
       else{
         const msg = "WARNING: Have you completed all these prerequisites ? " + prerequisites;
         setWarning2(msg);
+        const newWarnings = [
+          ...warnings,
+          {
+           msg: msg,
+           isComplete: false
+
+          }
+        ];
+        setWarnings(newWarnings);
       }
 
 
     }
-
-
 
 
   }
@@ -124,6 +188,15 @@ function searchMod(m){
       <div className="Planner" style={PlannerMain.planner}>
         
         <h1>Plan your modules!</h1>
+
+        <div>
+            <h2>Warnings</h2>
+            {warnings.length > 0 ? (
+                <WarningList warnings={warnings} setWarnings={setWarnings} />
+            ) : (
+                <p>No warnings</p>
+            )}
+            </div>
 
         <main>
 
