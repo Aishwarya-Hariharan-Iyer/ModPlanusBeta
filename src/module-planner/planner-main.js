@@ -5,188 +5,263 @@ import Button from "@mui/material/Button";
 import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import PlannerMain from './PlannerMain.css';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
+import firebase from 'firebase/compat/app';
+import { db } from "../authentication/firebase-config";
+import {
+  setDoc,
+  doc,
+} from "firebase/firestore";
 
 
 
+//NUSMODS API to retrieve the data for autocomplete from
 const API_NUSMODS_URL = 'https://api.nusmods.com/v2/2021-2022/moduleList.json';
-const API_MODULE_INFO = 'https://api.nusmods.com/v2/2021-2022/modules/'
 
+//NUSMODS API to retrieve the data for each module
+const API_MODULE_INFO = 'https://api.nusmods.com/v2/2021-2022/modules/';
 
-
-
-
+/**
+ * function to render the planner page along with all of its components
+ */
 export default function Planner() {
 
-  const [addGradeText, setAddGradeText] = useState('');
+  //the grade entered of planned module to be added
+  const [gradePlanned, setGradePlanned] = useState('');
+ 
+  //the module planned to be added
   const [Module, setModule] = useState([]);
-  const [info, setInfo] = useState('');
+
+  //module code of planned module to be added
+  const [modCode, setModCode] = useState('');
+
+  //data from the API set for Autocomplete information
   const [data, setData] = React.useState([]);
-  const [searchData, setSearchData] = React.useState([]);
-  const [preclusions, setPreclusions] = React.useState("");
-  const [corequisites, setCorequisites] = React.useState("");
-  const [prerequisites, setPrerequsiites] = React.useState([]);
-  const [fulfillReqs, setFulfillReqs] = React.useState([]);
-  let mods = "";
-  let eligibleMods = ['CS1101S'];
-  const [warning, setWarning] = React.useState("");
-  const [warning2, setWarning2] = React.useState("");
-  //const [warningsList, setWarningsList] = React.useState([]);
-  const [warnings, setWarnings] = useState([]);
-  const [newWarningText, setNewWarningText] = React.useState("");                                                                                      
+
+  //set preclusion, prerequsiites, corequisites and eligibleMods
+  const [prerequisiteMods, setPrerequisiteMods] = React.useState([]);
+  const [preclusionMods, setPreclusionMods] = React.useState([]);
+  const [corequisiteMods, setCorequisiteMods] = React.useState([]);
+  const [eligibleMods, setEligibleMods] = React.useState([]);
+
+  //truth state of the completion
+  const [containsCoreqs, setContainsCoreqs] = React.useState(true);
+  const [containsPrereqs, setContainsPrereqs] = React.useState(true);
+  const [containsPrecs, setContainsPrecs] = React.useState(false);
+
+  //truth state of selection
+  const [selected, setSelected] = React.useState(false);
+
+  //string of module planned seperated by semicolon
+  let modsPlanned = "";
+  
+  //set of eligible modules the student is allowed to take (all the preliminary modules are added here)
+  //let eligibleMods = ['CS1101S', 'MA1521', 'CS1231S'];
 
 
+  //the list of warnings to be displayed to user
+  const [warnings, setWarnings] = React.useState([]);
+
+  //a cariable to conduct trials with
+  const [p, setP] = React.useState('');
+
+  //the current user of the module
+  const user = firebase.auth().currentUser;
+
+
+//for when the page renders to help set the options for autocomplete
 React.useEffect(
   () => {
       fetch(API_NUSMODS_URL)
       .then(res => res.json())
-      .then(d => setData(d))
-  }, []
-);
+      .then(d => setData(d));
 
-function searchMod(m){
-  fetch(`${API_MODULE_INFO}${m}.json`)
-  .then(res => res.json())
-  .then(d => setSearchData(d))
+      //create user profile in firestore
+      if(user){
+      const userRef = doc(db, "users-planner", user.uid);
+      const userData = {
+        plannedMods: modsPlanned,
+        warnings: warnings,
+      }
+      setDoc(userRef, userData);
+    }
+  },);
+
+  
+  React.useEffect(()=>{
+
+    if(p){
+
+    const code = p.moduleCode;
+    setModCode(code);
+    const res = new RegExp(/(\b[A-Z0-9][A-Z0-9]+|\b[A-Z]\b)/g);
+    const mods = Module.map(x => x.code);
+
+    
+    //preclusion condition to be matched
+    const preclusions = p.preclusion;
+    let precMods = [];
+    
+    if(preclusions){
+      precMods = preclusions.match(res);
+      setPreclusionMods(precMods);
+      if(mods.some(element => {
+        return precMods.includes(element);})){
+        console.log("PRECLUSIONS ERRORS: Did you finish this preclusions condition? " + preclusions);
+      }
+    }
+
+
+
+    //corequisite condition to be matched
+    const corequisites = p.corequisite;
+    let coreqMods = [];
+    
+    if(corequisites){
+      coreqMods = corequisites.match(res);
+      setCorequisiteMods(coreqMods);
+      if(coreqMods.every(element => {
+        return mods.includes(element);
+      })){
+        console.log("COREQUISITE ERRORS: Did you finish this corequisite condition? " + corequisites);
+      }
+    }
+
+    //check if prerequisites are matched
+    const prerequisites = p.prerequisite;
+    if(prerequisites){
+      if(!eligibleMods.includes(code)){
+        console.log("PREREQUISITE ERRORS: Did you finish this prerequisite condition? " + prerequisites);
+      }
+  }
+    
+     const fulfillReqs = p.fulfillRequirements;
+     if(fulfillReqs){
+       let newEligibleMods = [...eligibleMods, fulfillReqs]
+       setEligibleMods(newEligibleMods);
+     }
+
+     //addToList(code);
+  
+}
+  
+}, [p]);
+
+  React.useEffect(()=>{
+
+    const code = modCode;
+    const mods = Module.map(x => x.code);
+
+    setContainsPrecs(
+      mods.some(element => {
+           return preclusionMods.includes(element);
+      })
+    );
+
+    setContainsCoreqs(
+      corequisiteMods.every(element => {
+        return mods.includes(element);
+      })
+    );
+
+    setContainsPrereqs(
+      eligibleMods.includes(code)
+    );
+
+
+  }, [eligibleMods, corequisiteMods, preclusionMods])
+
+
+//retrieve data regarding the module
+function handleAddition(code){
+   const response = fetch(`${API_MODULE_INFO}${code}.json`)
+   .then(res => res.json())
+   .then(res => setP(res)); 
 }
 
+function WarningList(props) {
+  const { warnings, setWarnings } = props;
 
-  function WarningList(props) {
-    const { warnings, setWarnings } = props;
-
-    function handleWarningCompletionToggled(toToggleWarning, toToggleWarningIndex) {
-      const newWarnings = [
-        ...warnings.slice(0, toToggleWarningIndex),
-        {
-          msg: toToggleWarning.msg,
-          isComplete: !toToggleWarning.isComplete
-        },
-        ...warnings.slice(toToggleWarningIndex + 1)
-      ];
-      setWarnings(newWarnings);
-    }
-    return (
-      <table style={{ margin: "0 auto", width: "100%" }}>
-            <thead>
-              <tr>
-                <th>No.</th>
-                <th>Warning</th>
-                <th>dismiss warnings</th>
-              </tr>
-            </thead>
-            <tbody>
-              {warnings.map((warns, index) => (
-                <tr key={warns.msg}>
-                  <td>{index + 1}</td>
-                  <td>{warns.msg}</td>
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={warns.isComplete}
-                      onChange={() => handleWarningCompletionToggled(warns, index)}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-    );
-  }
-
-  function addModule(code, grade) {
-    mods = mods + "; " + code;
-    searchMod(code);
-    setCorequisites(searchData.corequisite);
-    setPreclusions(searchData.preclusion);
-    setPrerequsiites(searchData.prerequisite);
-    const modsAll = searchData.fulfillRequirements;
-    setFulfillReqs(modsAll);
-    console.log(searchData);
-    const res = new RegExp(/(\b[A-Z0-9][A-Z0-9]+|\b[A-Z]\b)/g);
-
-    const modsPlanned = Module.map(x => x.code);
-
-
-    let precMods = [];
-    let coreqMods = [];
-    let containsPreclusions = false;
-    let containsCorequisites = true;
-
-    if(preclusions!==undefined){
-      precMods = preclusions.match(res);
-      containsPreclusions = modsPlanned.some(element => {
-        return precMods.includes(element);
-      });
-    }
-
-    if(corequisites!==undefined){
-      coreqMods = corequisites.match(res);
-      containsCorequisites = coreqMods.every(element => {
-        return modsPlanned.includes(element);
-      });
-    }
-
-    if(fulfillReqs!==undefined){
-      eligibleMods = eligibleMods.concat(fulfillReqs);
-      console.log(eligibleMods);
-    }
-
-    if(containsCorequisites && !containsPreclusions && !modsPlanned.includes(code) && eligibleMods.includes(code)){
-      const newModule = [
-        ...Module,
-        {
-          code: code,
-          grade: grade,
-          preclusions: preclusions
-        }
-      ];
-
-      setModule(newModule);
-
-    } else {
-      if(containsPreclusions){
-
-      }
-      if(!containsCorequisites) {
-        const msg = "WARNING: Remember to add these corequisites too: " + corequisites;
-        setWarning(msg); 
-        const newWarnings = [
-          ...warnings,
-          {
-           msg: msg,
-           isComplete: false
-
-          }
-        ];
-        setWarnings(newWarnings);
-      }
-      if(modsPlanned.includes(code)){
-      }
-      else{
-        const msg = "WARNING: Have you completed all these prerequisites ? " + prerequisites;
-        setWarning2(msg);
-        const newWarnings = [
-          ...warnings,
-          {
-           msg: msg,
-           isComplete: false
-
-          }
-        ];
-        setWarnings(newWarnings);
-      }
-
-
-    }
-
-
+  function handleWarningCompletionToggled(toToggleWarning, toToggleWarningIndex) {
+    const newWarnings = [
+      ...warnings.slice(0, toToggleWarningIndex),
+      {
+        msg: toToggleWarning.msg,
+        isComplete: !toToggleWarning.isComplete
+      },
+      ...warnings.slice(toToggleWarningIndex + 1)
+    ];
+    setWarnings(newWarnings);
   }
   return (
+    <table style={{ margin: "0 auto", width: "100%" }}>
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Warning</th>
+              <th>dismiss warnings</th>
+            </tr>
+          </thead>
+          <tbody>
+            {warnings.map((warns, index) => (
+              <tr key={warns.msg}>
+                <td>{index + 1}</td>
+                <td>{warns.msg}</td>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={warns.isComplete}
+                    onChange={() => handleWarningCompletionToggled(warns, index)}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+  );
+}
+
+function addToList(code){
+  const newModule = [
+    ...Module,
+    {
+      code: code,
+
+    }
+  ];
+
+  setModule(newModule);
+}
+
+<Typography>{warnings}</Typography>
+
+
+
+  function addModule(code) {
+    
+    const mods = Module.map(x=>x.code);
+
+    if(mods.includes(code)){
+      console.log("You cannot add the same module twice! " + code);
+    } else {
+      handleAddition(code);
+      addToList(code);
+    }
+    setSelected(true);
+    //completeAddition(code);
+
+  }
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    addModule(modCode);
+  }
+
+  return (
+    
     <>
       <div className="Planner" style={PlannerMain.planner}>
-        
+
         <h1>Plan your modules!</h1>
 
         <div>
@@ -200,49 +275,30 @@ function searchMod(m){
 
         <main>
 
-    <Card sx={{ minWidth: 275 }}>
-      <CardContent>
-        <Typography sx={{ fontSize: 14 }} color="text.secondary" gutterBottom>
-          WARNINGS
-        </Typography>
-        <Typography sx={{ mb: 1.5 }} color="red">
-          WARNINGS
-        </Typography>
-        <Typography variant="body2">
-          {warning}
-          <br />
-          {warning2}
-        </Typography>
-      </CardContent>
-    </Card>
-          <Box>
+          <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
             <h2>Add Data</h2>
       <Autocomplete
       disablePortal
-      id="combo-box-demo"
+      id="modules"
+      name="modules"
       options={data}
-     // sx={{ width: 300, zIndex: 'modal', borderRadius: '1px'}}
       getOptionLabel = {(option) => option.moduleCode+" : "+option.title } 
       autoSelect = {true}
       renderInput={(params) => <TextField {...params} label={"Module Code"} />}
-      onChange={(event, value) => {
-        setInfo(value); 
+      onChange={(event, value) => { 
         if(value!==null){
-          //console.log('hi');
-          setInfo(value.moduleCode);
-          //setPreclusions(value.Preclusion);
-          //setCorequisites(value.Corequisite);
-          //setFulfillReqs(value.Prerequisite);
-        } else {
-          //console.log('nay');
-        }
+          setModCode(value.moduleCode);
         }}
-      />
+      }
+
+/>
       <p></p>
       
-      <Autocomplete
+    
+      {/* <Autocomplete
       disablePortal
-      id="combo-box-demo"
+      id="grades"
+      name="grades"
       options={[
         {l: 'A+'},
         {l: 'A'},
@@ -263,14 +319,20 @@ function searchMod(m){
       getOptionLabel = {(option) => option.l} 
       autoSelect = {true}
       renderInput={(params) => <TextField {...params} label={"Predicted Grade"} />}
-      onChange={(event, value) => {setAddGradeText(value.l);}}
-      />
+      onChange={(event, value) => {setGradePlanned(value.l);}}
+      /> */}
+    
 
       <p></p>
-              <Button variant="contained">
-                <input type="submit" value="Add" onClick={()=>{addModule(info, addGradeText);}}/>
+      <Button
+                type="submit"
+                fullWidth
+                variant="contained"
+                sx={{ mt: 3, mb: 2 }}
+                onClick={handleSubmit}
+              >
+                Add Module
               </Button>
-            <p> </p>
           </Box>
 
           <Box>
@@ -280,7 +342,6 @@ function searchMod(m){
                 <tr>
                   <th>No.</th>
                   <th>Modules</th>
-                  <th>Grade</th>
                 </tr>
               </thead>
               <tbody>
@@ -288,7 +349,6 @@ function searchMod(m){
                   <tr key={Mod.code}>
                     <td>{idx + 1}</td>
                     <td>{Mod.code}</td>
-                    <td>{Mod.grade}</td>
                   </tr>
                 ))}
               </tbody>
