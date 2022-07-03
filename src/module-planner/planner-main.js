@@ -11,6 +11,8 @@ import { db } from "../authentication/firebase-config";
 import {
   setDoc,
   doc,
+  onSnapshot, 
+  updateDoc,
 } from "firebase/firestore";
 
 
@@ -52,6 +54,36 @@ export default function Planner() {
   //truth state of selection
   const [selected, setSelected] = React.useState(false);
 
+   //the current user of the module
+   const user = firebase.auth().currentUser;
+
+  const [userInfo, setUserInfo] = useState([]);
+
+  function getInfo(){
+    if(firebase.auth().currentUser){
+
+      const user = onSnapshot(doc(db, "users-planner", firebase.auth().currentUser.uid), 
+      (doc) => {
+        setUserInfo(doc.data());
+        });
+        return user;
+      } else {
+       console.log("no info");
+      }
+  }
+
+  React.useEffect(()=>{getInfo()}, [userInfo]);
+
+  const updateUser = async (id) => {
+    const userDoc = doc(db, "users-planner", id);
+    const userNew = {
+      plannedMods: Module.map(x=>x.code),
+      eligibleMods: eligibleMods,
+      warnings: warnings,
+    }
+    await updateDoc(userDoc, userNew);
+  };
+
   //string of module planned seperated by semicolon
   let modsPlanned = "";
   
@@ -65,8 +97,6 @@ export default function Planner() {
   //a cariable to conduct trials with
   const [p, setP] = React.useState('');
 
-  //the current user of the module
-  const user = firebase.auth().currentUser;
 
 
 //for when the page renders to help set the options for autocomplete
@@ -75,17 +105,7 @@ React.useEffect(
       fetch(API_NUSMODS_URL)
       .then(res => res.json())
       .then(d => setData(d));
-
-      //create user profile in firestore
-      if(user){
-      const userRef = doc(db, "users-planner", user.uid);
-      const userData = {
-        plannedMods: modsPlanned,
-        warnings: warnings,
-      }
-      setDoc(userRef, userData);
-    }
-  },);
+  },[data]);
 
   
   React.useEffect(()=>{
@@ -107,7 +127,11 @@ React.useEffect(
       setPreclusionMods(precMods);
       if(mods.some(element => {
         return precMods.includes(element);})){
-        console.log("PRECLUSIONS ERRORS: Did you finish this preclusions condition? " + preclusions);
+        const msg = "PRECLUSIONS ERRORS: Did you finish this preclusions condition? " + preclusions;
+        console.log(msg);
+        const newWarnings = [...warnings, msg];
+        setWarnings(newWarnings);
+        //userInfo.warnings = newWarnings;
       }
     }
 
@@ -123,7 +147,11 @@ React.useEffect(
       if(coreqMods.every(element => {
         return mods.includes(element);
       })){
-        console.log("COREQUISITE ERRORS: Did you finish this corequisite condition? " + corequisites);
+        const msg = "COREQUISITE ERRORS: Did you finish this corequisite condition? " + corequisites;
+        console.log(msg);
+        const newWarnings = [...warnings, msg];
+        setWarnings(newWarnings);
+        //userInfo.warnings = newWarnings;
       }
     }
 
@@ -131,21 +159,32 @@ React.useEffect(
     const prerequisites = p.prerequisite;
     if(prerequisites){
       if(!eligibleMods.includes(code)){
-        console.log("PREREQUISITE ERRORS: Did you finish this prerequisite condition? " + prerequisites);
+        const msg = "PREREQUISITE ERRORS: Did you finish this prerequisite condition? " + prerequisites;
+        console.log(msg);
+        const newWarnings = [...warnings, msg];
+        setWarnings(newWarnings);
+        //userInfo.warnings = newWarnings;
       }
   }
     
      const fulfillReqs = p.fulfillRequirements;
      if(fulfillReqs){
-       let newEligibleMods = [...eligibleMods, fulfillReqs]
+       let newEligibleMods = eligibleMods.concat(fulfillReqs);
        setEligibleMods(newEligibleMods);
+       //userInfo.eligibleMods = eligibleMods;
      }
 
-     //addToList(code);
-  
+     //addToList(code); 
 }
   
 }, [p]);
+
+// React.useEffect(()=>{
+//   userInfo.eligibleMods = eligibleMods;
+//   userInfo.plannedMods = Module.map(x=>x.code);
+//   userInfo.warnings = warnings;
+//   updateUser(user.uid);
+// }, [warnings, eligibleMods, Module])
 
   React.useEffect(()=>{
 
@@ -205,6 +244,8 @@ function addToList(code){
     } else {
       handleAddition(code);
       addToList(code);
+      console.log(eligibleMods);
+      updateUser(user.uid);
     }
     setSelected(true);
     //completeAddition(code);
