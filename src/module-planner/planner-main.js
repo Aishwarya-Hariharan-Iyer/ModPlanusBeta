@@ -107,7 +107,16 @@ React.useEffect(
       setPreclusionMods(precMods);
       if(mods.some(element => {
         return precMods.includes(element);})){
-        console.log("PRECLUSIONS ERRORS: Did you finish this preclusions condition? " + preclusions);
+        const msg = "PRECLUSIONS ERRORS: Did you finish this preclusions condition? " + preclusions;
+        const newWarnings = [
+          ...warnings,
+          {
+           msg: msg,
+           isComplete: false
+
+          }
+        ];
+        setWarnings(newWarnings);
       }
     }
 
@@ -123,7 +132,16 @@ React.useEffect(
       if(coreqMods.every(element => {
         return mods.includes(element);
       })){
-        console.log("COREQUISITE ERRORS: Did you finish this corequisite condition? " + corequisites);
+        const msg = "COREQUISITE ERRORS: Did you finish this corequisite condition? " + corequisites;
+        const newWarnings = [
+          ...warnings,
+          {
+           msg: msg,
+           isComplete: false
+
+          }
+        ];
+        setWarnings(newWarnings);
       }
     }
 
@@ -131,7 +149,17 @@ React.useEffect(
     const prerequisites = p.prerequisite;
     if(prerequisites){
       if(!eligibleMods.includes(code)){
-        console.log("PREREQUISITE ERRORS: Did you finish this prerequisite condition? " + prerequisites);
+        const msg = "PREREQUISITE ERRORS: Did you finish this prerequisite condition? " + prerequisites;
+        console.log(msg);
+        const newWarnings = [
+          ...warnings,
+          {
+           msg: msg,
+           isComplete: false
+
+          }
+        ];
+        setWarnings(newWarnings);
       }
   }
     
@@ -192,6 +220,7 @@ function WarningList(props) {
       ...warnings.slice(toToggleWarningIndex + 1)
     ];
     setWarnings(newWarnings);
+
   }
   return (
     <table style={{ margin: "0 auto", width: "100%" }}>
@@ -199,7 +228,7 @@ function WarningList(props) {
             <tr>
               <th>No.</th>
               <th>Warning</th>
-              <th>dismiss warnings</th>
+              <th>Handled</th>
             </tr>
           </thead>
           <tbody>
@@ -242,7 +271,17 @@ function addToList(code){
     const mods = Module.map(x=>x.code);
 
     if(mods.includes(code)){
-      console.log("You cannot add the same module twice! " + code);
+     const msg = "You cannot add the same module twice! " + code;
+     console.log(msg);
+     const newWarnings = [
+      ...warnings,
+      {
+       msg: msg,
+       isComplete: false
+
+      }
+    ];
+    setWarnings(newWarnings);
     } else {
       handleAddition(code);
       addToList(code);
@@ -265,7 +304,6 @@ function addToList(code){
         <h1>Plan your modules!</h1>
 
         <div>
-            <h2>Warnings</h2>
             {warnings.length > 0 ? (
                 <WarningList warnings={warnings} setWarnings={setWarnings} />
             ) : (
