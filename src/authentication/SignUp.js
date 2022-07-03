@@ -53,7 +53,14 @@ export default function SignUp() {
     try{
       await createUserWithEmailAndPassword(auth, em, ps).then(user=> {
       const userRef = doc(db, "users-profile", user.user.uid);
+      const plannerRef = doc(db, "users-planner", user.user.uid);
       setDoc(userRef, userProfile);
+      const userData = {
+        plannedMods: "",
+        eligibleMods: ['CS1101S', 'MA1521', 'CS1231S'],
+        warnings: [],
+      }
+      setDoc(plannerRef, userData);
     }).then(routeHome);
     } catch (error) {
       console.log(error.message);
