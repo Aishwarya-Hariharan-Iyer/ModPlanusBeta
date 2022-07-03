@@ -14,6 +14,10 @@ export default function Buttons() {
     let path = `/calculator`; 
     goTo(path);
   };
+  const goToChatroom = () =>{ 
+    let path = `/Chatroom`; 
+    goTo(path);
+  };
 
   return (
     <Stack direction="row" spacing={2}>
@@ -22,6 +26,9 @@ export default function Buttons() {
       </Button>
       <Button variant="contained" onClick={goToCalculator} fullWidth>
       CALCULATE CAP
+      </Button>
+      <Button variant="contained" onClick={goToChatroom} fullWidth>
+      CHATROOM
       </Button>
     </Stack>
   );
