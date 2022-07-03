@@ -6,11 +6,20 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import PlannerMain from './PlannerMain.css';
 import Typography from '@mui/material/Typography';
+import { useNavigate } from "react-router-dom";
+import Grid from '@mui/material/Grid';
+import Input from '@mui/material/Input';
+import 'firebase/compat/auth';
+import 'firebase/compat/database';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SaveIcon from '@mui/icons-material/Save';
 import firebase from 'firebase/compat/app';
 import { db } from "../authentication/firebase-config";
 import {
   setDoc,
   doc,
+  onSnapshot, 
+  updateDoc,
 } from "firebase/firestore";
 
 
@@ -52,6 +61,36 @@ export default function Planner() {
   //truth state of selection
   const [selected, setSelected] = React.useState(false);
 
+   //the current user of the module
+   const user = firebase.auth().currentUser;
+
+  const [userInfo, setUserInfo] = useState([]);
+
+  function getInfo(){
+    if(firebase.auth().currentUser){
+
+      const user = onSnapshot(doc(db, "users-planner", firebase.auth().currentUser.uid), 
+      (doc) => {
+        setUserInfo(doc.data());
+        });
+        return user;
+      } else {
+       console.log("no info");
+      }
+  }
+
+  React.useEffect(()=>{getInfo()}, [userInfo]);
+
+  const updateUser = async (id) => {
+    const userDoc = doc(db, "users-planner", id);
+    const userNew = {
+      plannedMods: Module.map(x=>x.code),
+      eligibleMods: eligibleMods,
+      warnings: warnings,
+    }
+    await updateDoc(userDoc, userNew);
+  };
+
   //string of module planned seperated by semicolon
   let modsPlanned = "";
   
@@ -65,8 +104,6 @@ export default function Planner() {
   //a cariable to conduct trials with
   const [p, setP] = React.useState('');
 
-  //the current user of the module
-  const user = firebase.auth().currentUser;
 
 
 //for when the page renders to help set the options for autocomplete
@@ -75,17 +112,7 @@ React.useEffect(
       fetch(API_NUSMODS_URL)
       .then(res => res.json())
       .then(d => setData(d));
-
-      //create user profile in firestore
-      if(user){
-      const userRef = doc(db, "users-planner", user.uid);
-      const userData = {
-        plannedMods: modsPlanned,
-        warnings: warnings,
-      }
-      setDoc(userRef, userData);
-    }
-  },);
+  },[data]);
 
   
   React.useEffect(()=>{
@@ -108,6 +135,7 @@ React.useEffect(
       if(mods.some(element => {
         return precMods.includes(element);})){
         const msg = "PRECLUSIONS ERRORS: Did you finish this preclusions condition? " + preclusions;
+
         const newWarnings = [
           ...warnings,
           {
@@ -133,6 +161,7 @@ React.useEffect(
         return mods.includes(element);
       })){
         const msg = "COREQUISITE ERRORS: Did you finish this corequisite condition? " + corequisites;
+
         const newWarnings = [
           ...warnings,
           {
@@ -142,6 +171,7 @@ React.useEffect(
           }
         ];
         setWarnings(newWarnings);
+
       }
     }
 
@@ -151,6 +181,7 @@ React.useEffect(
       if(!eligibleMods.includes(code)){
         const msg = "PREREQUISITE ERRORS: Did you finish this prerequisite condition? " + prerequisites;
         console.log(msg);
+
         const newWarnings = [
           ...warnings,
           {
@@ -160,20 +191,28 @@ React.useEffect(
           }
         ];
         setWarnings(newWarnings);
+
       }
   }
     
      const fulfillReqs = p.fulfillRequirements;
      if(fulfillReqs){
-       let newEligibleMods = [...eligibleMods, fulfillReqs]
+       let newEligibleMods = eligibleMods.concat(fulfillReqs);
        setEligibleMods(newEligibleMods);
+       //userInfo.eligibleMods = eligibleMods;
      }
 
-     //addToList(code);
-  
+     //addToList(code); 
 }
   
 }, [p]);
+
+// React.useEffect(()=>{
+//   userInfo.eligibleMods = eligibleMods;
+//   userInfo.plannedMods = Module.map(x=>x.code);
+//   userInfo.warnings = warnings;
+//   updateUser(user.uid);
+// }, [warnings, eligibleMods, Module])
 
   React.useEffect(()=>{
 
@@ -285,6 +324,8 @@ function addToList(code){
     } else {
       handleAddition(code);
       addToList(code);
+      console.log(eligibleMods);
+      updateUser(user.uid);
     }
     setSelected(true);
     //completeAddition(code);
@@ -391,6 +432,19 @@ function addToList(code){
                 ))}
               </tbody>
             </table>
+            <p></p>
+
+
+            <Grid item xs={12} m={5}>
+            <Button variant="contained" 
+            startIcon={<SaveIcon />} 
+            sx ={{m: 4}}
+            onClick={handleSubmit}
+            >
+            Save Changes
+            </Button>
+            </Grid>
+
           </Box>
           <p> </p>
         </main>

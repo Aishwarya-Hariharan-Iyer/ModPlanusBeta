@@ -56,7 +56,7 @@ export default function SignUp() {
       const plannerRef = doc(db, "users-planner", user.user.uid);
       setDoc(userRef, userProfile);
       const userData = {
-        plannedMods: "",
+        plannedMods: [],
         eligibleMods: ['CS1101S', 'MA1521', 'CS1231S'],
         warnings: [],
       }
