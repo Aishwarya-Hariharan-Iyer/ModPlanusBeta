@@ -6,6 +6,13 @@ import TextField from '@mui/material/TextField';
 import Autocomplete from '@mui/material/Autocomplete';
 import PlannerMain from './PlannerMain.css';
 import Typography from '@mui/material/Typography';
+import { useNavigate } from "react-router-dom";
+import Grid from '@mui/material/Grid';
+import Input from '@mui/material/Input';
+import 'firebase/compat/auth';
+import 'firebase/compat/database';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SaveIcon from '@mui/icons-material/Save';
 import firebase from 'firebase/compat/app';
 import { db } from "../authentication/firebase-config";
 import {
@@ -344,6 +351,19 @@ function addToList(code){
                 ))}
               </tbody>
             </table>
+            <p></p>
+
+
+            <Grid item xs={12} m={5}>
+            <Button variant="contained" 
+            startIcon={<SaveIcon />} 
+            sx ={{m: 4}}
+            onClick={handleSubmit}
+            >
+            Save Changes
+            </Button>
+            </Grid>
+
           </Box>
           <p> </p>
         </main>

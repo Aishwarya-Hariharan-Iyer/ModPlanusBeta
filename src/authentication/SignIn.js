@@ -117,6 +117,7 @@ export default function SignIn() {
                 autoComplete="current-password"
               />
               <Button
+                role = "button"
                 type="submit"
                 fullWidth
                 variant="contained"
