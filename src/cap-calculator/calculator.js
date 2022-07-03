@@ -2,18 +2,13 @@ import React from "react";
 import { useState } from "react";
 import Box from "../module-planner/Components/Box/Box";
 import Button from "@mui/material/Button";
-import Link from "@mui/material/Link";
-import Avatar from "@mui/material/Avatar";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import CssBaseline from '@mui/material/CssBaseline';
-import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Input from '@mui/material/Input';
+<<<<<<< HEAD
 import { InputAdornment } from "@mui/material";
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -38,6 +33,8 @@ function Copyright(props) {
     </Typography>
   );
 }
+=======
+>>>>>>> f3f9a71c16793da9977711c87f4b4e5455254616
 
 const theme = createTheme();
 

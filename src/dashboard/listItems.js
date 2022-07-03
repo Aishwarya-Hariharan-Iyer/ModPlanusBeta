@@ -8,42 +8,56 @@ import DesignServicesIcon from '@mui/icons-material/DesignServices';
 import BookIcon from '@mui/icons-material/Book';
 import MessageIcon from '@mui/icons-material/Message';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
-import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { useNavigate } from 'react-router-dom';
+import firebase from 'firebase/compat/app';
 import { List } from '@mui/material';
 
 export default function ListItems(){
   
+  const user = firebase.auth().currentUser;
+
   const goTo = useNavigate();
   
   const goToHome = () =>{
-    let path = '/home';
-    goTo(path);
+      if(user!==null){
+        console.log(user);
+        goTo('/home');
+      }else{
+        goTo('/signin');
+      }
   };
 
   const goToProfile = () =>{ 
     let path = `/account`; 
+    if(user!==null){
     goTo(path);
+  }else{
+    goTo('/signin');
+  }
   };
 
   const goToCalculator = () =>{ 
     let path = `/calculator`; 
-    goTo(path);
+      goTo(path);
   };
 
   const goToPlanner = () =>{ 
     let path = `/planner`; 
-    goTo(path);
+      goTo(path);
   };
 
-  const goToSignOut = () =>{ 
-    let path = `/signout`; 
-    goTo(path);
+  const goToChatroom = () =>{ 
+    let path = `/Chatroom`; 
+    if(user!==null){
+      goTo(path);
+    }else{
+      goTo('/signin');
+    }
   };
   
   return (
   <List>
-    <ListItemButton onClick={goToHome}>
+    <ListItemButton onClick={goToHome} >
       <ListItemIcon>
         <HomeIcon />
       </ListItemIcon>
@@ -67,7 +81,7 @@ export default function ListItems(){
       </ListItemIcon>
       <ListItemText primary="Module Information" />
     </ListItemButton>
-    <ListItemButton>
+    <ListItemButton onClick={goToChatroom}>
       <ListItemIcon>
         <MessageIcon />
       </ListItemIcon>
@@ -79,13 +93,7 @@ export default function ListItems(){
       </ListItemIcon>
       <ListItemText primary="Account Settings" />
     </ListItemButton>
-    <ListItemButton onClick={goToSignOut}>
-      <ListItemIcon>
-        <ExitToAppIcon />
-      </ListItemIcon>
-      <ListItemText primary="Sign Out" />
-    </ListItemButton>
     </List>
   );
-
+  
 }
