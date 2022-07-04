@@ -9,7 +9,6 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Input from '@mui/material/Input';
 import { InputAdornment } from "@mui/material";
-import TextField from "@mui/material";
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
@@ -287,32 +286,6 @@ export default function Calculator() {
             </table>
             <h4>Cummulative CAP is: {cap}</h4>
             <h4>CAP is: {(credits + (cap*cmc)) / (mc + cmc)}</h4>
-
-            <p></p>
-            <Grid item xs={12} sm={6} m={5}>
-            <TextField
-              required
-              id="firstName"
-              name="firstName"
-              label="First name"
-              fullWidth
-              autoComplete="given-name"
-              variant="outlined"
-              onChange={(e) => setFirstName(e.target.value)}
-            />
-            </Grid>
-            <Grid item xs={12} sm={6} m={5}>
-              <TextField
-                required
-                id="lastName"
-                name="lastName"
-                label="Last name"
-                fullWidth
-                autoComplete="family-name"
-                variant="outlined"
-                onChange={(e) => setLastName(e.target.value)}
-              />
-            </Grid>
 
             <Grid item xs={12} m={5}>
             <Button variant="contained" 
