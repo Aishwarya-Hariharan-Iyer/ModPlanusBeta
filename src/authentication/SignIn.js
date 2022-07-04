@@ -7,6 +7,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
 import Paper from '@mui/material/Paper';
+import ForgotPassword from './ForgotPassword';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -58,6 +59,11 @@ export default function SignIn() {
 
   const routeHome = () =>{ 
     let path = `/home`; 
+    goTo(path);
+  }
+
+  const routeForgot = () =>{ 
+    let path = `/forgotpassword`; 
     goTo(path);
   }
 
@@ -127,7 +133,7 @@ export default function SignIn() {
               </Button>
               <Grid container>
                 <Grid item xs>
-                  <Link href="#" variant="body2">
+                  <Link href="#" variant="body2" onClick={routeForgot}>
                     Forgot password?
                   </Link>
                 </Grid>

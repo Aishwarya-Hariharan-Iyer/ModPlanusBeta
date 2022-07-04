@@ -2,24 +2,28 @@ import * as React from 'react';
 import { Button, Card, Typography } from "@mui/material";
 import TextField from '@mui/material/TextField';
 import { getAuth, updatePassword } from "firebase/auth";
-
+import firebase from 'firebase/compat/app';
+import {signInWithEmailAndPassword, sendPasswordResetEmail} from "firebase/auth";
+import { auth } from './firebase-config';
 export default function ForgotPassword(){
    
-    const auth = getAuth();
-    const user = auth.currentUser;
-    const [newP, setNewP] = React.useState('');
+    //const auth = getAuth();
+    const [email, setEmail] = React.useState('');
     
-   const updateP = (newPassword) => updatePassword(user, newPassword).then(() => {
-  // Update successful.
-  console.log("YAY! UPDATED!")
-}).catch((error) => {
-  // An error ocurred
-  console.log("OOPS! ERROR" + error);
-});
+    const forgotPassword = (Email) => {
 
-const handleSubmit = (e) => {
-    e.preventDefault();
-    updateP(newP);  
+      console.log("reset email sent to " + Email);
+      sendPasswordResetEmail(auth, Email, null)
+          .then(() => {
+              alert("reset email sent to " + Email);
+          })
+          .catch(function (e) {
+              console.log(e);
+          });
+  };
+
+const handleSubmit = (email) => {
+    forgotPassword(email) 
   };
 
 
@@ -37,10 +41,10 @@ return (
             fullWidth
             autoComplete="password"
             variant="outlined"
-            onChange={(e) => setNewP(e.target.value)}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <p></p>
-          <Button onClick = {handleSubmit}>
+          <Button onClick = {handleSubmit(email)}>
           SUBMIT
           </Button>
 
