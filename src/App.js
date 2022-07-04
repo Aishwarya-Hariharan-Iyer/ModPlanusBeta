@@ -32,6 +32,7 @@ import 'firebase/compat/database';
 import RightButtons from './dashboard/RightButtons';
 import FeedbackForm from './feedback-form/FeedbackForm';
 import Chatroom from './Chatrom/chatroom';
+import ForgotPassword from './authentication/ForgotPassword';
 
 const drawerWidth = 240;
 
@@ -167,6 +168,7 @@ export default function App() {
         <Route path='/calculator' element={<Calculator/>}/>
         <Route path='/dashboard' element = {<Dashboard/>}/>
         <Route path='/feedbackform' element = {<FeedbackForm/>}/>
+        <Route path='/forgotpassword' element = {<ForgotPassword/>}/>
         <Route path='/' element = {<Dashboard/>}/>
         <Route path='/account' element = {<Profile/>}/>
         <Route path="*" element={<NotFoundPage/>} />
