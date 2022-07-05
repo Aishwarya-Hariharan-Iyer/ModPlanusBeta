@@ -312,15 +312,16 @@ function addToList(code){
     if(mods.includes(code)){
      const msg = "You cannot add the same module twice! " + code;
      console.log(msg);
-     const newWarnings = [
-      ...warnings,
-      {
-       msg: msg,
-       isComplete: false
+     alert(msg);
+    //  const newWarnings = [
+    //   ...warnings,
+    //   {
+    //    msg: msg,
+    //    isComplete: false
 
-      }
-    ];
-    setWarnings(newWarnings);
+    //   }
+    // ];
+    // setWarnings(newWarnings);
     } else {
       handleAddition(code);
       addToList(code);

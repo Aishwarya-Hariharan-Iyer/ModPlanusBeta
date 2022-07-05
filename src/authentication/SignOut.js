@@ -17,7 +17,7 @@ const theme = createTheme();
 
 export default function SignOut() {
   const signout = async () => {
-    await signOut(auth).then(goFirst).then(console.log("done"));
+    await signOut(auth).then(goFirst);
   };
 
   let goTo = useNavigate();
