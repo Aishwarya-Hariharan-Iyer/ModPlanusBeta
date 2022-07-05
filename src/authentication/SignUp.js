@@ -64,6 +64,7 @@ export default function SignUp() {
     }).then(routeHome);
     } catch (error) {
       console.log(error.message);
+      alert(error.message);
     }
   };
 
@@ -84,7 +85,6 @@ export default function SignUp() {
 
     const user = {
       email: email,
-      password: password,
       displayName: displayName,
       firstName: firstName,
       lastName: lastName,
@@ -96,7 +96,6 @@ export default function SignUp() {
     }
 
     setSignUpEmail(email);
-    setSignUpPassword(password);
     setSignUpFirstName(firstName);
     setSignUpLastName(lastName);
     setSignUpMajor(major);

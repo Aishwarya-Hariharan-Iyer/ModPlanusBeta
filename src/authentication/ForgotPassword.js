@@ -19,6 +19,7 @@ export default function ForgotPassword(){
           })
           .catch(function (e) {
               console.log(e);
+              alert(e.message);
           });
   };
 

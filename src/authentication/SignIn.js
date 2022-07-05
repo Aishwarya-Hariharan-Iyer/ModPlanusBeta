@@ -32,6 +32,7 @@ export default function SignIn() {
       ).then(routeHome);
     } catch (error) {
       console.log(error.message);
+      alert(error.message);
     }
   }
 
