@@ -29,7 +29,9 @@ export default function SignIn() {
         auth,
         em,
         ps
-      ).then(routeHome);
+      )
+      .then(()=>alert("Signed In!"))
+      .then(routeHome);
     } catch (error) {
       console.log(error.message);
       alert(error.message);

@@ -10,6 +10,7 @@ export default function FeedbackForm(){
         inputs.forEach(input => {
             input.value = '';
           });
+          alert("Submitted!");
     }
     return(
     <>

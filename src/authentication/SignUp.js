@@ -61,7 +61,9 @@ export default function SignUp() {
         warnings: [],
       }
       setDoc(plannerRef, userData);
-    }).then(routeHome);
+    })
+    .then(()=>alert("Thank you for joining us!"))
+    .then(routeHome);
     } catch (error) {
       console.log(error.message);
       alert(error.message);
