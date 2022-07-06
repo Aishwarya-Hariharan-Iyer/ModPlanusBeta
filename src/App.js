@@ -23,15 +23,11 @@ import Planner from './module-planner/planner-main';
 import Calculator from './cap-calculator/calculator';
 import Dashboard from './dashboard/Dashboard';
 import NotFoundPage from './error-pages/NotFoundPage';
-import { auth } from "./authentication/firebase-config";
-import {useState} from "react";
-import { onAuthStateChanged } from "firebase/auth";
 import Profile from './profile-page/Profile';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
 import RightButtons from './dashboard/RightButtons';
 import FeedbackForm from './feedback-form/FeedbackForm';
-import Chatroom from './Chatrom/chatroom';
 import ForgotPassword from './authentication/ForgotPassword';
 
 const drawerWidth = 240;
@@ -105,11 +101,6 @@ export default function App() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
-  const [user, setUser] = useState({});
-    onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    })
-
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -172,7 +163,6 @@ export default function App() {
         <Route path='/' element = {<Dashboard/>}/>
         <Route path='/account' element = {<Profile/>}/>
         <Route path="*" element={<NotFoundPage/>} />
-        <Route path='/Chatroom' element={<Chatroom/>} />
       </Routes>
       </Box> 
     </Box>
