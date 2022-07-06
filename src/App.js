@@ -29,6 +29,7 @@ import 'firebase/compat/database';
 import RightButtons from './dashboard/RightButtons';
 import FeedbackForm from './feedback-form/FeedbackForm';
 import ForgotPassword from './authentication/ForgotPassword';
+import { AnimatePresence } from 'framer-motion';
 
 const drawerWidth = 240;
 
@@ -159,6 +160,7 @@ export default function App() {
         <Route path='/calculator' element={<Calculator/>}/>
         <Route path='/dashboard' element = {<Dashboard/>}/>
         <Route path='/feedbackform' element = {<FeedbackForm/>}/>
+        <Route path='/profile' element = {<Profile/>}/>
         <Route path='/forgotpassword' element = {<ForgotPassword/>}/>
         <Route path='/' element = {<Dashboard/>}/>
         <Route path='/account' element = {<Profile/>}/>
