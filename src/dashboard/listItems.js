@@ -28,7 +28,7 @@ export default function ListItems(){
   };
 
   const goToProfile = () =>{ 
-    let path = `/account`; 
+    let path = `/profile`; 
     if(user!==null){
     goTo(path);
   }else{
