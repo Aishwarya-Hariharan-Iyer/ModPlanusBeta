@@ -17,13 +17,13 @@ const theme = createTheme();
 
 export default function SignOut() {
   const signout = async () => {
-    await signOut(auth).then(goFirst);
+    await signOut(auth).then(()=>alert("Signed Out!"));
   };
 
   let goTo = useNavigate();
 
   const goFirst = () =>{
-    let path = '/home';
+    let path = '/dashboard';
     goTo(path);
   }
 
@@ -67,7 +67,10 @@ export default function SignOut() {
               component="form"
               noValidate
               sx={{ mt: 1 }}
-              onClick = {signout}
+              onClick = {()=>{
+                signout();
+                goFirst();
+              }}
             >
               <Button
                 type="submit"

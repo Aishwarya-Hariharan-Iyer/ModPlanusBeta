@@ -313,15 +313,6 @@ function addToList(code){
      const msg = "You cannot add the same module twice! " + code;
      console.log(msg);
      alert(msg);
-    //  const newWarnings = [
-    //   ...warnings,
-    //   {
-    //    msg: msg,
-    //    isComplete: false
-
-    //   }
-    // ];
-    // setWarnings(newWarnings);
     } else {
       handleAddition(code);
       addToList(code);
@@ -329,7 +320,6 @@ function addToList(code){
       updateUser(user.uid);
     }
     setSelected(true);
-    //completeAddition(code);
 
   }
 
