@@ -38,12 +38,20 @@ export default function ListItems(){
 
   const goToCalculator = () =>{ 
     let path = `/calculator`; 
+    if(user!==null){
       goTo(path);
+    }else{
+      goTo('/signin');
+    }
   };
 
   const goToPlanner = () =>{ 
     let path = `/planner`; 
+    if(user!==null){
       goTo(path);
+    }else{
+      goTo('/signin');
+    }
   };
 
   const goToChatroom = () =>{ 

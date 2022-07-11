@@ -98,15 +98,15 @@ export default function Calculator() {
     //users.push(user);
   };
 
-  const deleteProfile = () => {
-    database.ref('/cap/').child(firstName + lastName).remove()
-    .then(() => {
-      window.alert('user cap information removed from database!');
-    })
-    .catch(error => {
-      console.error(error);
-    });
-  };
+  // const deleteProfile = () => {
+  //   database.ref('/cap/').child(firstName + lastName).remove()
+  //   .then(() => {
+  //     window.alert('user cap information removed from database!');
+  //   })
+  //   .catch(error => {
+  //     console.error(error);
+  //   });
+  // };
 
   function ComputeC(grade) {
     if (grade === "A+" || grade === "A") {
@@ -182,7 +182,7 @@ export default function Calculator() {
             }}
           >
             <Typography component="h1" variant="h5">
-              CAP calculator!
+              CAP Calculator!
             </Typography>
             <Box component="form" noValidate sx={{ mt: 1 }}
 >
@@ -295,13 +295,13 @@ export default function Calculator() {
             >
             Save Changes
             </Button>
-            <Button variant="outlined" 
+            {/* <Button variant="outlined" 
             startIcon={<DeleteIcon />}
             sx ={{m: 4}} 
             onClick={ deleteProfile }
             >
             Delete Account
-            </Button>
+            </Button> */}
             </Grid>
           </Box>
           <p> </p>

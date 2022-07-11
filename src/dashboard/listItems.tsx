@@ -52,6 +52,7 @@ export default function ListItems(){
       goTo(path);
     }else{
       goTo('/signin');
+      alert("Please sign in or sign out!");
     }
   };
   

@@ -52,15 +52,8 @@ export default function SignUp() {
   const signup = async (em, ps, userProfile) => {
     try{
       await createUserWithEmailAndPassword(auth, em, ps).then(user=> {
-      const userRef = doc(db, "users-profile", user.user.uid);
-      const plannerRef = doc(db, "users-planner", user.user.uid);
+      const userRef = doc(db, "users", user.user.uid);
       setDoc(userRef, userProfile);
-      const userData = {
-        plannedMods: [],
-        eligibleMods: ['CS1101S', 'MA1521', 'CS1231S'],
-        warnings: [],
-      }
-      setDoc(plannerRef, userData);
     })
     .then(()=>alert("Thank you for joining us!"))
     .then(routeHome);
@@ -95,6 +88,41 @@ export default function SignUp() {
       year: year,
       semester: semester,
       otherProgrammes: otherProgrammes,
+
+      Y1S1Planned: [''],
+      Y1S1Confirmed: [''],
+      Y1S1CAP: 0,
+
+      Y1S2Planned: [''],
+      Y1S2Confirmed: [''],
+      Y1S2CAP:0,
+
+      Y2S1Planned: [''],
+      Y2S1Confirmed: [''],
+      Y2S1CAP:0,
+
+      Y2S2Planned: [''],
+      Y2S2Confirmed: [''],
+      Y2S2CAP:0,
+
+      Y3S1Planned: [''],
+      Y3S1Confirmed: [''],
+      Y3S1CAP:0,
+
+      Y3S2Planned: [''],
+      Y3S2Confirmed: [''],
+      Y3S2CAP:0,
+
+      Y4S1Planned: [''],
+      Y4S1Confirmed: [''],
+      Y4S1CAP:0,
+
+      Y4S2Planned: [''],
+      Y4S2Confirmed: [''],
+      Y4S2CAP:0,
+
+      eligibleMods: [''],
+      currentCAP: 0,
     }
 
     setSignUpEmail(email);
