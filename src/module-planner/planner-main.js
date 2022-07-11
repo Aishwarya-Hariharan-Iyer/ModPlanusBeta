@@ -13,6 +13,7 @@ import 'firebase/compat/auth';
 import 'firebase/compat/database';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SaveIcon from '@mui/icons-material/Save';
+import { createFilterOptions } from "@mui/material/Autocomplete";
 import firebase from 'firebase/compat/app';
 import { db } from "../authentication/firebase-config";
 import {
@@ -57,6 +58,9 @@ export default function Planner() {
   const [containsCoreqs, setContainsCoreqs] = React.useState(true);
   const [containsPrereqs, setContainsPrereqs] = React.useState(true);
   const [containsPrecs, setContainsPrecs] = React.useState(false);
+
+  //year and sem of study
+  const [ys, setYS] = React.useState('');
 
   //truth state of selection
   const [selected, setSelected] = React.useState(false);
@@ -328,12 +332,116 @@ function addToList(code){
     addModule(modCode);
   }
 
+  const getProfile = () =>{
+    if(ys==="YEAR 1 SEM 1"){
+      const userRef = {
+        Y1S1Taken: [],
+        Y1S1Completed: [],
+        Eligible:[]
+      }
+      return userRef;
+    }
+    if(ys==="YEAR 1 SEM 2"){
+      const userRef = {
+        Y1S2Taken: [],
+        Y1S2Completed: [],
+        Eligible:[]
+      }
+      return userRef;
+    }
+    if(ys==="YEAR 2 SEM 1"){
+      const userRef = {
+        Y2S1Taken: [],
+        Y2S1Completed: [],
+        Eligible:[]
+      }
+      return userRef;
+    }
+    if(ys==="YEAR 2 SEM 2"){
+      const userRef = {
+        Y2S2Taken: [],
+        Y2S2Completed: [],
+        Eligible:[]
+      }
+      return userRef;
+    }
+    if(ys==="YEAR 3 SEM 1"){
+      const userRef = {
+        Y3S1Taken: [],
+        Y3S1Completed: [],
+        Eligible:[]
+      }
+      return userRef;
+    }
+    if(ys==="YEAR 3 SEM 2"){
+      const userRef = {
+        Y3S2Taken: [],
+        Y3S2Completed: [],
+        Eligible:[]
+      }
+      return userRef;
+    }
+    if(ys==="YEAR 4 SEM 1"){
+      const userRef = {
+        Y4S1Taken: [],
+        Y4S1Completed: [],
+        Eligible:[]
+      }
+      return userRef;
+    }
+    if(ys==="YEAR 4 SEM 2"){
+      const userRef = {
+        Y4S2Taken: [],
+        Y4S2Completed: [],
+        Eligible:[]
+      }
+      return userRef;
+    }
+    else{
+      return "";
+    }
+  }
+
+  const handleConfirm = (event) => {
+    const userProf = getProfile();
+    const userRef = doc(db, "users-planner", user.user.uid);
+    setDoc(userRef, userProf);
+  }
+
+
+  const OPTIONS_LIMIT = 10;
+
+  const filterOptions = createFilterOptions({
+    limit: OPTIONS_LIMIT
+});
+
   return (
     
     <>
       <div className="Planner" style={PlannerMain.planner}>
 
         <h1>Plan your modules!</h1>
+
+      <Autocomplete
+      disablePortal
+      id="semesters"
+      name="semesters"
+      options={[
+        {l: 'YEAR 1 SEM 1'},
+        {l: 'YEAR 1 SEM 2'},
+        {l: 'YEAR 2 SEM 1'},
+        {l: 'YEAR 2 SEM 2'},
+        {l: 'YEAR 3 SEM 1'},
+        {l: 'YEAR 3 SEM 2'},
+        {l: 'YEAR 4 SEM 1'},
+        {l: 'YEAR 4 SEM 2'},
+      ]}
+      getOptionLabel = {(option) => option.l} 
+      autoSelect = {true}
+      renderInput={(params) => <TextField {...params} label={"Year and Semester"} />}
+      onChange={(event, value) => {setYS(value.l);}}
+      />
+
 
         <div>
             {warnings.length > 0 ? (
@@ -348,7 +456,9 @@ function addToList(code){
           <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
             <h2>Add Data</h2>
       <Autocomplete
+      filterOptions={filterOptions}
       disablePortal
+      autoHighlight={true}
       id="modules"
       name="modules"
       options={data}

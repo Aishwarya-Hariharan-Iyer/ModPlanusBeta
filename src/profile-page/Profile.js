@@ -9,6 +9,7 @@ import { useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
+import { useNavigate } from 'react-router-dom';
 import { getAuth } from "firebase/auth";
 import { db } from '../authentication/firebase-config';
 import {
@@ -43,7 +44,7 @@ export default function Profile() {
   function getInfo(){
     if(firebase.auth().currentUser){
 
-      const user = onSnapshot(doc(db, "users-profile", firebase.auth().currentUser.uid), 
+      const user = onSnapshot(doc(db, "users", firebase.auth().currentUser.uid), 
       (doc) => {
         //console.log(doc.data());
         setUserInfo(doc.data());
@@ -54,10 +55,19 @@ export default function Profile() {
       }
   }
 
-  React.useEffect(()=>{getInfo()}, [userInfo]);
+  React.useEffect(()=>{getInfo()}, []);
+  const user = firebase.auth().currentUser;
+
+  const deleteUser = () => {
+    user.delete()
+    .then(()=>goToDashBoard())
+    .then(() => alert("We are sad to see you go!"))
+    .catch((error) => alert(error.message))
+};
+  
 
   const updateUser = async (id) => {
-    const userDoc = doc(db, "users-profile", id);
+    const userDoc = doc(db, "users", id);
     const userNew = {
       firstName: firstName,
       lastName: lastName,
@@ -70,6 +80,15 @@ export default function Profile() {
     }
     await updateDoc(userDoc, userNew);
   };
+
+  const goTo = useNavigate();
+  
+  const goToDashBoard = () =>{
+        goTo('/dashboard');
+  };
+
+  const auth = getAuth();
+  
 
   return (
     <React.Fragment>
@@ -97,7 +116,7 @@ export default function Profile() {
             
             id="email"
             name="email"
-            placeholder={userInfo.email}
+            value={userInfo.email}
             fullWidth
             autoComplete="display-name"
             variant="outlined"
@@ -115,7 +134,7 @@ export default function Profile() {
             id="firstName"
             name="firstName"
             fullWidth
-            placeholder={userInfo.firstName}
+            value={userInfo.firstName}
             autoComplete="given-name"
             variant="outlined"
             onChange={(e) => {setFirstName(e.target.value)}}
@@ -131,7 +150,7 @@ export default function Profile() {
             required
             id="lastName"
             name="lastName"
-            placeholder={userInfo.lastName}
+            value={userInfo.lastName}
             fullWidth
             autoComplete="family-name"
             variant="outlined"
@@ -148,7 +167,7 @@ export default function Profile() {
             required
             id="displayName"
             name="displayName"
-            placeholder={userInfo.displayName}
+            value={userInfo.displayName}
             fullWidth
             autoComplete="display-name"
             variant="outlined"
@@ -164,7 +183,7 @@ export default function Profile() {
             required
             id="year"
             name="year"
-            placeholder={userInfo.year}
+            value={userInfo.year}
             fullWidth
             autoComplete="year"
             variant="outlined"
@@ -180,7 +199,7 @@ export default function Profile() {
             required
             id="semester"
             name="semester"
-            placeholder={userInfo.semester}
+            value={userInfo.semester}
             fullWidth
             variant="outlined"
             onChange={(e) => setSemester(e.target.value)}
@@ -195,7 +214,7 @@ export default function Profile() {
             required
             id="major"
             name="major"
-            placeholder={userInfo.major}
+            value={userInfo.major}
             fullWidth
             autoComplete="major"
             variant="outlined"
@@ -210,7 +229,7 @@ export default function Profile() {
           <TextField
             id="minor"
             name="minor"
-            placeholder={userInfo.minor}
+            value={userInfo.minor}
             fullWidth
             autoComplete="minor"
             variant="outlined"
@@ -225,7 +244,7 @@ export default function Profile() {
           <TextField
             id="other programmes"
             name="other programmes"
-            placeholder={userInfo.otherProgrammes}
+            value={userInfo.otherProgrammes}
             fullWidth
             autoComplete="other programmes"
             variant="outlined"
@@ -244,7 +263,7 @@ export default function Profile() {
         <Button variant="outlined" 
         startIcon={<DeleteIcon />}
         sx ={{m: 4}}
-        //onClick={getInfo}
+        onClick={deleteUser}
         >
         Delete Account
         </Button>
