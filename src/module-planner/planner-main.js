@@ -66,34 +66,7 @@ export default function Planner() {
   const [selected, setSelected] = React.useState(false);
 
    //the current user of the module
-   const user = firebase.auth().currentUser;
-
-  const [userInfo, setUserInfo] = useState([]);
-
-  function getInfo(){
-    if(firebase.auth().currentUser){
-
-      const user = onSnapshot(doc(db, "users-planner", firebase.auth().currentUser.uid), 
-      (doc) => {
-        setUserInfo(doc.data());
-        });
-        return user;
-      } else {
-       console.log("no info");
-      }
-  }
-
-  React.useEffect(()=>{getInfo()}, [userInfo]);
-
-  const updateUser = async (id) => {
-    const userDoc = doc(db, "users-planner", id);
-    const userNew = {
-      plannedMods: Module.map(x=>x.code),
-      eligibleMods: eligibleMods,
-      warnings: warnings,
-    }
-    await updateDoc(userDoc, userNew);
-  };
+   const userCurr = firebase.auth().currentUser;
 
   //string of module planned seperated by semicolon
   let modsPlanned = "";
@@ -148,7 +121,7 @@ React.useEffect(
 
           }
         ];
-        setWarnings(newWarnings);
+        setWarnings(newWarnings.filter((v, i, a) => a.indexOf(v) === i));
       }
     }
 
@@ -181,7 +154,26 @@ React.useEffect(
 
     //check if prerequisites are matched
     const prerequisites = p.prerequisite;
+
     if(prerequisites){
+    const  prereqArr1 = prerequisites.replaceAll("and", "AND");
+    const prereqArr2 = prereqArr1.replaceAll("or", "OR");
+    const prereqArr3 = prereqArr2.replaceAll("(", " BO ");
+    const prereqArr4 = prereqArr3.replaceAll(")", " BC ");
+    const prereqArr = prereqArr4.match(res);
+    console.log("HIII");
+    console.log(prereqArr);
+
+    const finalArray = prereqArr.map(x=>{
+      if(x!=="BO" && x !=="BC" && x!=="AND" && x!== "OR"){
+        return mods.includes(x);
+      } else {
+        return x;
+      }
+    });
+
+    console.log(finalArray);
+    
       if(!eligibleMods.includes(code)){
         const msg = "PREREQUISITE ERRORS: Did you finish this prerequisite condition? " + prerequisites;
         console.log(msg);
@@ -201,7 +193,7 @@ React.useEffect(
     
      const fulfillReqs = p.fulfillRequirements;
      if(fulfillReqs){
-       let newEligibleMods = eligibleMods.concat(fulfillReqs);
+       let newEligibleMods = eligibleMods.concat(fulfillReqs).filter((v, i, a) => a.indexOf(v) === i);
        setEligibleMods(newEligibleMods);
        //userInfo.eligibleMods = eligibleMods;
      }
@@ -321,7 +313,6 @@ function addToList(code){
       handleAddition(code);
       addToList(code);
       console.log(eligibleMods);
-      updateUser(user.uid);
     }
     setSelected(true);
 
@@ -332,80 +323,489 @@ function addToList(code){
     addModule(modCode);
   }
 
-  const getProfile = () =>{
-    if(ys==="YEAR 1 SEM 1"){
-      const userRef = {
-        Y1S1Taken: [],
-        Y1S1Completed: [],
-        Eligible:[]
-      }
-      return userRef;
-    }
-    if(ys==="YEAR 1 SEM 2"){
-      const userRef = {
-        Y1S2Taken: [],
-        Y1S2Completed: [],
-        Eligible:[]
-      }
-      return userRef;
-    }
-    if(ys==="YEAR 2 SEM 1"){
-      const userRef = {
-        Y2S1Taken: [],
-        Y2S1Completed: [],
-        Eligible:[]
-      }
-      return userRef;
-    }
-    if(ys==="YEAR 2 SEM 2"){
-      const userRef = {
-        Y2S2Taken: [],
-        Y2S2Completed: [],
-        Eligible:[]
-      }
-      return userRef;
-    }
-    if(ys==="YEAR 3 SEM 1"){
-      const userRef = {
-        Y3S1Taken: [],
-        Y3S1Completed: [],
-        Eligible:[]
-      }
-      return userRef;
-    }
-    if(ys==="YEAR 3 SEM 2"){
-      const userRef = {
-        Y3S2Taken: [],
-        Y3S2Completed: [],
-        Eligible:[]
-      }
-      return userRef;
-    }
-    if(ys==="YEAR 4 SEM 1"){
-      const userRef = {
-        Y4S1Taken: [],
-        Y4S1Completed: [],
-        Eligible:[]
-      }
-      return userRef;
-    }
-    if(ys==="YEAR 4 SEM 2"){
-      const userRef = {
-        Y4S2Taken: [],
-        Y4S2Completed: [],
-        Eligible:[]
-      }
-      return userRef;
-    }
-    else{
-      return "";
-    }
+  const handleSave = (event) => {
+    event.preventDefault();
+    updateProfile(firebase.auth().currentUser.uid);
+
   }
 
-  const handleConfirm = (event) => {
-    const userProf = getProfile();
-    const userRef = doc(db, "users-planner", user.user.uid);
-    setDoc(userRef, userProf);
+  const [user, setUser] = useState([]);
+  function getInfo(){
+    if(firebase.auth().currentUser){
+
+      const userI = onSnapshot(doc(db, "users", firebase.auth().currentUser.uid), 
+      (doc) => {
+        //console.log(doc.data());
+        setUser(doc.data());
+        });
+        return userI;
+      } else {
+       console.log("no info");
+      }
+  }
+
+  React.useEffect(()=>{getInfo()}, []);
+  
+
+  const updateProfile = async (id) =>{
+
+    const mods = Module.map(x => x.code);
+    const userDoc = doc(db, "users", id);
+
+    if(ys==="YEAR 1 SEM 1"){
+      const planned = user.Y1S1Planned;
+      console.log(planned);
+      const confirmed = user.Y1S1Confirmed;
+      const newPlanned = planned.concat(mods).filter((v, i, a) => a.indexOf(v) === i);
+      const newConfirmed = confirmed.concat(mods).filter((v, i, a) => a.indexOf(v) === i);
+
+      const userNew = {
+      email: user.email,
+      displayName: user.displayName,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      major: user.major,
+      minor: user.minor,
+      year: user.year,
+      semester: user.semester,
+      otherProgrammes: user.otherProgrammes,
+
+      Y1S1Planned: newPlanned,
+      Y1S1Confirmed: newConfirmed,
+      Y1S1CAP: user.Y1S1CAP,
+
+      Y1S2Planned: user.Y1S2Planned,
+      Y1S2Confirmed: user.Y1S2Confirmed,
+      Y1S2CAP:user.Y1S2CAP,
+
+      Y2S1Planned: user.Y2S1Planned,
+      Y2S1Confirmed: user.Y2S1Confirmed,
+      Y2S1CAP:user.Y2S1CAP,
+
+      Y2S2Planned: user.Y2S2Planned,
+      Y2S2Confirmed: user.Y2S2Confirmed,
+      Y2S2CAP:user.Y2S2CAP,
+
+      Y3S1Planned: user.Y3S1Planned,
+      Y3S1Confirmed: user.Y3S1Confirmed,
+      Y3S1CAP:user.Y3S1CAP,
+
+      Y3S2Planned: user.Y3S2Planned,
+      Y3S2Confirmed: user.Y3S2Confirmed,
+      Y3S2CAP: user.Y3S2CAP,
+
+      Y4S1Planned: user.Y4S1Planned,
+      Y4S1Confirmed: user.Y4S1Confirmed,
+      Y4S1CAP:user.Y4S1CAP,
+
+      Y4S2Planned: user.Y4S2Planned,
+      Y4S2Confirmed: user.Y4S2Confirmed,
+      Y4S2CAP:user.Y4S2CAP,
+
+      eligibleMods: user.eligibleMods.concat(eligibleMods).filter((v, i, a) => a.indexOf(v) === i),
+      currentCAP: user.currentCAP,
+      warnings:user.warnings.concat(warnings),
+      }
+      await updateDoc(userDoc, userNew);
+    }
+
+    if(ys==="YEAR 1 SEM 2"){
+
+      const planned = user.Y1S2Planned;
+      console.log(planned);
+      const confirmed = user.Y1S2Confirmed;
+      const newPlanned = planned.concat(mods).filter((v, i, a) => a.indexOf(v) === i);
+      const newConfirmed = confirmed.concat(mods).filter((v, i, a) => a.indexOf(v) === i);
+
+
+      const userNew = {
+      email: user.email,
+      displayName: user.displayName,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      major: user.major,
+      minor: user.minor,
+      year: user.year,
+      semester: user.semester,
+      otherProgrammes: user.otherProgrammes,
+
+      Y1S1Planned: user.Y1S1Planned,
+      Y1S1Confirmed: user.Y1S1Confirmed,
+      Y1S1CAP: user.Y1S1CAP,
+
+      Y1S2Planned: newPlanned,
+      Y1S2Confirmed: newConfirmed,
+      Y1S2CAP:user.Y1S2CAP,
+
+      Y2S1Planned: user.Y2S1Planned,
+      Y2S1Confirmed: user.Y2S1Confirmed,
+      Y2S1CAP:user.Y2S1CAP,
+
+      Y2S2Planned: user.Y2S2Planned,
+      Y2S2Confirmed: user.Y2S2Confirmed,
+      Y2S2CAP:user.Y2S2CAP,
+
+      Y3S1Planned: user.Y3S1Planned,
+      Y3S1Confirmed: user.Y3S1Confirmed,
+      Y3S1CAP:user.Y3S1CAP,
+
+      Y3S2Planned: user.Y3S2Planned,
+      Y3S2Confirmed: user.Y3S2Confirmed,
+      Y3S2CAP: user.Y3S2CAP,
+
+      Y4S1Planned: user.Y4S1Planned,
+      Y4S1Confirmed: user.Y4S1Confirmed,
+      Y4S1CAP:user.Y4S1CAP,
+
+      Y4S2Planned: user.Y4S2Planned,
+      Y4S2Confirmed: user.Y4S2Confirmed,
+      Y4S2CAP:user.Y4S2CAP,
+
+      eligibleMods: user.eligibleMods.concat(eligibleMods).filter((v, i, a) => a.indexOf(v) === i),
+      currentCAP: user.currentCAP,
+      warnings:user.warnings.concat(warnings),
+      }
+      await updateDoc(userDoc, userNew);
+    }
+    if(ys==="YEAR 2 SEM 1"){
+
+      const planned = user.Y2S1Planned;
+      console.log(planned);
+      const confirmed = user.Y2S1Confirmed;
+      const newPlanned = planned.concat(mods).filter((v, i, a) => a.indexOf(v) === i);
+      const newConfirmed = confirmed.concat(mods).filter((v, i, a) => a.indexOf(v) === i);
+
+
+      const userNew = {
+        email: user.email,
+        displayName: user.displayName,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        major: user.major,
+        minor: user.minor,
+        year: user.year,
+        semester: user.semester,
+        otherProgrammes: user.otherProgrammes,
+  
+        Y1S1Planned: user.Y1S1Planned,
+        Y1S1Confirmed: user.Y1S1Confirmed,
+        Y1S1CAP: user.Y1S1CAP,
+  
+        Y1S2Planned: user.Y1S2Planned,
+        Y1S2Confirmed: user.Y1S2Confirmed,
+        Y1S2CAP:user.Y1S2CAP,
+  
+        Y2S1Planned: newPlanned,
+        Y2S1Confirmed: newConfirmed,
+        Y2S1CAP:user.Y2S1CAP,
+  
+        Y2S2Planned: user.Y2S2Planned,
+        Y2S2Confirmed: user.Y2S2Confirmed,
+        Y2S2CAP:user.Y2S2CAP,
+  
+        Y3S1Planned: user.Y3S1Planned,
+        Y3S1Confirmed: user.Y3S1Confirmed,
+        Y3S1CAP:user.Y3S1CAP,
+  
+        Y3S2Planned: user.Y3S2Planned,
+        Y3S2Confirmed: user.Y3S2Confirmed,
+        Y3S2CAP: user.Y3S2CAP,
+  
+        Y4S1Planned: user.Y4S1Planned,
+        Y4S1Confirmed: user.Y4S1Confirmed,
+        Y4S1CAP:user.Y4S1CAP,
+  
+        Y4S2Planned: user.Y4S2Planned,
+        Y4S2Confirmed: user.Y4S2Confirmed,
+        Y4S2CAP:user.Y4S2CAP,
+  
+        eligibleMods: user.eligibleMods.concat(eligibleMods).filter((v, i, a) => a.indexOf(v) === i),
+        currentCAP: user.currentCAP,
+        warnings:user.warnings.concat(warnings),
+        }
+        await updateDoc(userDoc, userNew);
+    }
+    if(ys==="YEAR 2 SEM 2"){
+
+      const planned = user.Y2S2Planned;
+      console.log(planned);
+      const confirmed = user.Y2S2Confirmed;
+      const newPlanned = planned.concat(mods).filter((v, i, a) => a.indexOf(v) === i);
+      const newConfirmed = confirmed.concat(mods).filter((v, i, a) => a.indexOf(v) === i);
+
+      const userNew = {
+        email: user.email,
+        displayName: user.displayName,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        major: user.major,
+        minor: user.minor,
+        year: user.year,
+        semester: user.semester,
+        otherProgrammes: user.otherProgrammes,
+  
+        Y1S1Planned: user.Y1S1Planned,
+        Y1S1Confirmed: user.Y1S1Confirmed,
+        Y1S1CAP: user.Y1S1CAP,
+  
+        Y1S2Planned: user.Y1S2Planned,
+        Y1S2Confirmed: user.Y1S2Confirmed,
+        Y1S2CAP:user.Y1S2CAP,
+  
+        Y2S1Planned: user.Y2S1Planned,
+        Y2S1Confirmed: user.Y2S1Confirmed,
+        Y2S1CAP:user.Y2S1CAP,
+  
+        Y2S2Planned: newPlanned,
+        Y2S2Confirmed: newConfirmed,
+        Y2S2CAP:user.Y2S2CAP,
+  
+        Y3S1Planned: user.Y3S1Planned,
+        Y3S1Confirmed: user.Y3S1Confirmed,
+        Y3S1CAP:user.Y3S1CAP,
+  
+        Y3S2Planned: user.Y3S2Planned,
+        Y3S2Confirmed: user.Y3S2Confirmed,
+        Y3S2CAP: user.Y3S2CAP,
+  
+        Y4S1Planned: user.Y4S1Planned,
+        Y4S1Confirmed: user.Y4S1Confirmed,
+        Y4S1CAP:user.Y4S1CAP,
+  
+        Y4S2Planned: user.Y4S2Planned,
+        Y4S2Confirmed: user.Y4S2Confirmed,
+        Y4S2CAP:user.Y4S2CAP,
+  
+        eligibleMods: user.eligibleMods.concat(eligibleMods).filter((v, i, a) => a.indexOf(v) === i),
+        currentCAP: user.currentCAP,
+        warnings:user.warnings.concat(warnings),
+        }
+        await updateDoc(userDoc, userNew);
+    }
+    if(ys==="YEAR 3 SEM 1"){
+      const planned = user.Y3S1Planned;
+      console.log(planned);
+      const confirmed = user.Y3S1Confirmed;
+      const newPlanned = planned.concat(mods).filter((v, i, a) => a.indexOf(v) === i);
+      const newConfirmed = confirmed.concat(mods).filter((v, i, a) => a.indexOf(v) === i);
+
+      const userNew = {
+        email: user.email,
+        displayName: user.displayName,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        major: user.major,
+        minor: user.minor,
+        year: user.year,
+        semester: user.semester,
+        otherProgrammes: user.otherProgrammes,
+  
+        Y1S1Planned: user.Y1S1Planned,
+        Y1S1Confirmed: user.Y1S1Confirmed,
+        Y1S1CAP: user.Y1S1CAP,
+  
+        Y1S2Planned: user.Y1S2Planned,
+        Y1S2Confirmed: user.Y1S2Confirmed,
+        Y1S2CAP:user.Y1S2CAP,
+  
+        Y2S1Planned: user.Y2S1Planned,
+        Y2S1Confirmed: user.Y2S1Confirmed,
+        Y2S1CAP:user.Y2S1CAP,
+  
+        Y2S2Planned: user.Y2S2Planned,
+        Y2S2Confirmed: user.Y2S2Confirmed,
+        Y2S2CAP:user.Y2S2CAP,
+  
+        Y3S1Planned: newPlanned,
+        Y3S1Confirmed: newConfirmed,
+        Y3S1CAP:user.Y3S1CAP,
+  
+        Y3S2Planned: user.Y3S2Planned,
+        Y3S2Confirmed: user.Y3S2Confirmed,
+        Y3S2CAP: user.Y3S2CAP,
+  
+        Y4S1Planned: user.Y4S1Planned,
+        Y4S1Confirmed: user.Y4S1Confirmed,
+        Y4S1CAP:user.Y4S1CAP,
+  
+        Y4S2Planned: user.Y4S2Planned,
+        Y4S2Confirmed: user.Y4S2Confirmed,
+        Y4S2CAP:user.Y4S2CAP,
+  
+        eligibleMods: user.eligibleMods.concat(eligibleMods).filter((v, i, a) => a.indexOf(v) === i),
+        currentCAP: user.currentCAP,
+        warnings:user.warnings.concat(warnings),
+        }
+        await updateDoc(userDoc, userNew);
+    }
+    if(ys==="YEAR 3 SEM 2"){
+      const planned = user.Y3S2Planned;
+      console.log(planned);
+      const confirmed = user.Y3S2Confirmed;
+      const newPlanned = planned.concat(mods).filter((v, i, a) => a.indexOf(v) === i);
+      const newConfirmed = confirmed.concat(mods).filter((v, i, a) => a.indexOf(v) === i);
+      const userNew = {
+        email: user.email,
+        displayName: user.displayName,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        major: user.major,
+        minor: user.minor,
+        year: user.year,
+        semester: user.semester,
+        otherProgrammes: user.otherProgrammes,
+  
+        Y1S1Planned: user.Y1S1Planned,
+        Y1S1Confirmed: user.Y1S1Confirmed,
+        Y1S1CAP: user.Y1S1CAP,
+  
+        Y1S2Planned: user.Y1S2Planned,
+        Y1S2Confirmed: user.Y1S2Confirmed,
+        Y1S2CAP:user.Y1S2CAP,
+  
+        Y2S1Planned: user.Y2S1Planned,
+        Y2S1Confirmed: user.Y2S1Confirmed,
+        Y2S1CAP:user.Y2S1CAP,
+  
+        Y2S2Planned: user.Y2S2Planned,
+        Y2S2Confirmed: user.Y2S2Confirmed,
+        Y2S2CAP:user.Y2S2CAP,
+  
+        Y3S1Planned: user.Y3S1Planned,
+        Y3S1Confirmed: user.Y3S1Confirmed,
+        Y3S1CAP:user.Y3S1CAP,
+  
+        Y3S2Planned: newPlanned,
+        Y3S2Confirmed: newConfirmed,
+        Y3S2CAP: user.Y3S2CAP,
+  
+        Y4S1Planned: user.Y4S1Planned,
+        Y4S1Confirmed: user.Y4S1Confirmed,
+        Y4S1CAP:user.Y4S1CAP,
+  
+        Y4S2Planned: user.Y4S2Planned,
+        Y4S2Confirmed: user.Y4S2Confirmed,
+        Y4S2CAP:user.Y4S2CAP,
+  
+        eligibleMods: user.eligibleMods.concat(eligibleMods).filter((v, i, a) => a.indexOf(v) === i),
+        currentCAP: user.currentCAP,
+        warnings:user.warnings.concat(warnings),
+        }
+        await updateDoc(userDoc, userNew);
+    }
+    if(ys==="YEAR 4 SEM 1"){
+      const planned = user.Y4S1Planned;
+      console.log(planned);
+      const confirmed = user.Y4S1Confirmed;
+      const newPlanned = planned.concat(mods).filter((v, i, a) => a.indexOf(v) === i);
+      const newConfirmed = confirmed.concat(mods).filter((v, i, a) => a.indexOf(v) === i);
+      const userNew = {
+        email: user.email,
+        displayName: user.displayName,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        major: user.major,
+        minor: user.minor,
+        year: user.year,
+        semester: user.semester,
+        otherProgrammes: user.otherProgrammes,
+  
+        Y1S1Planned: user.Y1S1Planned,
+        Y1S1Confirmed: user.Y1S1Confirmed,
+        Y1S1CAP: user.Y1S1CAP,
+  
+        Y1S2Planned: user.Y1S2Planned,
+        Y1S2Confirmed: user.Y1S2Confirmed,
+        Y1S2CAP:user.Y1S2CAP,
+  
+        Y2S1Planned: user.Y2S1Planned,
+        Y2S1Confirmed: user.Y2S1Confirmed,
+        Y2S1CAP:user.Y2S1CAP,
+  
+        Y2S2Planned: user.Y2S2Planned,
+        Y2S2Confirmed: user.Y2S2Confirmed,
+        Y2S2CAP:user.Y2S2CAP,
+  
+        Y3S1Planned: user.Y3S1Planned,
+        Y3S1Confirmed: user.Y3S1Confirmed,
+        Y3S1CAP:user.Y3S1CAP,
+  
+        Y3S2Planned: user.Y3S2Planned,
+        Y3S2Confirmed: user.Y3S2Confirmed,
+        Y3S2CAP: user.Y3S2CAP,
+  
+        Y4S1Planned: newPlanned,
+        Y4S1Confirmed: newConfirmed,
+        Y4S1CAP:user.Y4S1CAP,
+  
+        Y4S2Planned: user.Y4S2Planned,
+        Y4S2Confirmed: user.Y4S2Confirmed,
+        Y4S2CAP:user.Y4S2CAP,
+  
+        eligibleMods: user.eligibleMods.concat(eligibleMods).filter((v, i, a) => a.indexOf(v) === i),
+        currentCAP: user.currentCAP,
+        warnings:user.warnings.concat(warnings),
+        }
+        await updateDoc(userDoc, userNew);
+    }
+    if(ys==="YEAR 4 SEM 2"){
+      const planned = user.Y4S2Planned;
+      console.log(planned);
+      const confirmed = user.Y4S2Confirmed;
+      const newPlanned = planned.concat(mods).filter((v, i, a) => a.indexOf(v) === i);
+      const newConfirmed = confirmed.concat(mods).filter((v, i, a) => a.indexOf(v) === i);
+      const userNew = {
+        email: user.email,
+        displayName: user.displayName,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        major: user.major,
+        minor: user.minor,
+        year: user.year,
+        semester: user.semester,
+        otherProgrammes: user.otherProgrammes,
+  
+        Y1S1Planned: user.Y1S1Planned,
+        Y1S1Confirmed: user.Y1S1Confirmed,
+        Y1S1CAP: user.Y1S1CAP,
+  
+        Y1S2Planned: user.Y1S2Planned,
+        Y1S2Confirmed: user.Y1S2Confirmed,
+        Y1S2CAP:user.Y1S2CAP,
+  
+        Y2S1Planned: user.Y2S1Planned,
+        Y2S1Confirmed: user.Y2S1Confirmed,
+        Y2S1CAP:user.Y2S1CAP,
+  
+        Y2S2Planned: user.Y2S2Planned,
+        Y2S2Confirmed: user.Y2S2Confirmed,
+        Y2S2CAP:user.Y2S2CAP,
+  
+        Y3S1Planned: user.Y3S1Planned,
+        Y3S1Confirmed: user.Y3S1Confirmed,
+        Y3S1CAP:user.Y3S1CAP,
+  
+        Y3S2Planned: user.Y3S2Planned,
+        Y3S2Confirmed: user.Y3S2Confirmed,
+        Y3S2CAP: user.Y3S2CAP,
+  
+        Y4S1Planned: user.Y4S1Planned,
+        Y4S1Confirmed: user.Y4S1Confirmed,
+        Y4S1CAP:user.Y4S1CAP,
+  
+        Y4S2Planned: newPlanned,
+        Y4S2Confirmed: newConfirmed,
+        Y4S2CAP:user.Y4S2CAP,
+  
+        eligibleMods: user.eligibleMods.concat(eligibleMods).filter((v, i, a) => a.indexOf(v) === i),
+        currentCAP: user.currentCAP,
+        warnings:user.warnings.concat(warnings),
+        }
+        await updateDoc(userDoc, userNew);
+    }
+    else{
+     //do nothing...?
+    }
   }
 
 
@@ -540,7 +940,7 @@ function addToList(code){
             <Button variant="contained" 
             startIcon={<SaveIcon />} 
             sx ={{m: 4}}
-            onClick={handleSubmit}
+            onClick={handleSave}
             >
             Save Changes
             </Button>
