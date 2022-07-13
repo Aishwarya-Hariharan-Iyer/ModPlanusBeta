@@ -123,6 +123,7 @@ export default function SignUp() {
 
       eligibleMods: [''],
       currentCAP: 0,
+      warnings:[''],
     }
 
     setSignUpEmail(email);
