@@ -82,6 +82,69 @@ export default function Planner() {
   const [p, setP] = React.useState('');
 
 
+  function convert(finalArray) {
+    let stack = ["BO"];
+    let Operator = ["AND", "OR"]
+    let precedence = ["OR", "AND"]
+    let ExpY = []
+    for (let element = 0; element < finalArray.length; element++) {
+      if (finalArray[element] == "BO") {
+        stack.push(finalArray[element]);
+      }
+      if (Operator.includes(finalArray[element])) {
+        if (Operator.includes(stack[stack.length-1]) && precedence.indexOf(stack[stack.length-1]) > precedence.indexOf(finalArray[element])) {
+          ExpY.push(stack[stack.length-1])
+          stack.pop()
+          stack.push(finalArray[element]);
+        }
+        else {
+          stack.push(finalArray[element]);
+        }
+      }
+      if (!Operator.includes(finalArray[element]) && finalArray[element] != "BO" && finalArray[element] != "BC") { 
+        ExpY.push(finalArray[element]);
+      }
+      if (finalArray[element] == "BC") {
+          for (let a = stack.length -1; a >0; a--) {
+            if (stack[a] != "BO" && stack[a] != "BC") { 
+              ExpY.push(stack[a])
+            }
+            stack.pop()
+        }
+      }
+    }
+    return ExpY;
+  }
+
+  function evaluate(finalArr) {
+    let finalArray = convert(finalArr)
+    let evaluation = false
+    let Operator = ["AND", "OR"]
+    let stack = []
+    for (let element = 0; element < finalArray.length; element++) {
+      if (!Operator.includes(finalArray[element])) {
+        stack.push(finalArray[element]);
+      }
+      if (Operator.includes(finalArray[element])) {
+          let operator = finalArray[element]
+          let operand1 = stack.pop();
+          let operand2 = stack.pop();
+        if (operator == "AND") {
+            evaluation = operand1 && operand2
+        }
+        if (operator == "OR") {
+            evaluation = operand1 || operand2
+        }
+        stack.push(evaluation)
+      }
+    }
+    console.log("hihihiih");
+    return stack.pop();
+
+  }
+
+
+
 
 //for when the page renders to help set the options for autocomplete
 React.useEffect(
@@ -173,6 +236,8 @@ React.useEffect(
     });
 
     console.log(finalArray);
+    const vari = evaluate(finalArray);
+    console.log(vari);
     
       if(!eligibleMods.includes(code)){
         const msg = "PREREQUISITE ERRORS: Did you finish this prerequisite condition? " + prerequisites;
@@ -257,6 +322,7 @@ function WarningList(props) {
     setWarnings(newWarnings);
 
   }
+
   return (
     <table style={{ margin: "0 auto", width: "100%" }}>
           <thead>
@@ -296,6 +362,7 @@ function addToList(code){
 
   setModule(newModule);
 }
+
 
 <Typography>{warnings}</Typography>
 
