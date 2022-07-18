@@ -129,10 +129,10 @@ export default function Planner() {
           let operator = finalArray[element]
           let operand1 = stack.pop();
           let operand2 = stack.pop();
-        if (operator == "AND") {
+        if (operator === "AND") {
             evaluation = operand1 && operand2
         }
-        if (operator == "OR") {
+        if (operator === "OR") {
             evaluation = operand1 || operand2
         }
         stack.push(evaluation)
@@ -219,18 +219,23 @@ React.useEffect(
     const prerequisites = p.prerequisite;
 
     if(prerequisites){
-    const  prereqArr1 = prerequisites.replaceAll("and", "AND");
+    const prereqArr5 = prerequisites.replaceAll("or its equivalent", " ");
+    const  prereqArr1 = prereqArr5.replaceAll("and", "AND");
     const prereqArr2 = prereqArr1.replaceAll("or", "OR");
     const prereqArr3 = prereqArr2.replaceAll("(", " BO ");
     const prereqArr4 = prereqArr3.replaceAll(")", " BC ");
     const prereqArr = prereqArr4.match(res);
+
     console.log("HIII");
     console.log(prereqArr);
 
-    const finalArray = prereqArr.map(x=>{
-      if(x!=="BO" && x !=="BC" && x!=="AND" && x!== "OR"){
+    let finalArray = prereqArr.map(x=>{
+      if(x!=="BO" && x !=="BC" && x!=="AND" && x!== "OR" && x!=="TRUE"){
         return mods.includes(x);
       } else {
+        if(x==="TRUE"){
+          return true;
+        }
         return x;
       }
     });
@@ -240,11 +245,13 @@ React.useEffect(
     console.log(vari);
     
       if(!eligibleMods.includes(code)){
-        const msg = "PREREQUISITE ERRORS: Did you finish this prerequisite condition? " + prerequisites;
-        console.log(msg);
-
-        const newWarnings = [
-          ...warnings,
+        if(!vari){
+        
+          const msg = "PREREQUISITE ERRORS: Did you finish this prerequisite condition? " + prerequisites;
+          console.log(msg);
+          
+          const newWarnings = [
+            ...warnings,
           {
            msg: msg,
            isComplete: false
@@ -253,7 +260,10 @@ React.useEffect(
         ];
         setWarnings(newWarnings);
 
+      } else {
+        setWarnings("WARNING: Our pgm detected one or more of the following prerequisites to be unfulfilled! " + prerequisites)
       }
+    }
   }
     
      const fulfillReqs = p.fulfillRequirements;
