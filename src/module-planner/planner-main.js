@@ -31,6 +31,169 @@ const API_NUSMODS_URL = 'https://api.nusmods.com/v2/2021-2022/moduleList.json';
 //NUSMODS API to retrieve the data for each module
 const API_MODULE_INFO = 'https://api.nusmods.com/v2/2021-2022/modules/';
 
+export function convert(finalArray) {
+  let stack = ["BO"];
+  let Operator = ["AND", "OR"]
+  let precedence = ["OR", "AND"]
+  let ExpY = []
+  for (let element = 0; element < finalArray.length; element++) {
+    if (finalArray[element] === "BO") {
+      stack.push(finalArray[element]);
+    }
+    if (Operator.includes(finalArray[element])) {
+      if (Operator.includes(stack[stack.length-1]) && precedence.indexOf(stack[stack.length-1]) > precedence.indexOf(finalArray[element])) {
+        ExpY.push(stack[stack.length-1])
+        stack.pop()
+        stack.push(finalArray[element]);
+      }
+      else {
+        stack.push(finalArray[element]);
+      }
+    }
+    if (!Operator.includes(finalArray[element]) && finalArray[element] !== "BO" && finalArray[element] !== "BC") { 
+      ExpY.push(finalArray[element]);
+    }
+    if (finalArray[element] === "BC") {
+        for (let a = stack.length -1; a >0; a--) {
+          if (stack[a] !== "BO" && stack[a] !== "BC") { 
+            ExpY.push(stack[a])
+          }
+          stack.pop()
+      }
+    }
+  }
+  return ExpY;
+}
+
+export function evaluate(finalArr) {
+  let finalArray = convert(finalArr)
+  let evaluation = false
+  let Operator = ["AND", "OR"]
+  let stack = []
+  for (let element = 0; element < finalArray.length; element++) {
+    if (!Operator.includes(finalArray[element])) {
+      stack.push(finalArray[element]);
+    }
+    if (Operator.includes(finalArray[element])) {
+        let operator = finalArray[element]
+        let operand1 = stack.pop();
+        let operand2 = stack.pop();
+      if (operator === "AND") {
+          evaluation = operand1 && operand2
+      }
+      if (operator === "OR") {
+          evaluation = operand1 || operand2
+      }
+      stack.push(evaluation)
+    }
+  }
+  // console.log("hihihiih");
+  return stack.pop();
+
+}
+
+export function WarningList(props) {
+  const { warnings, setWarnings } = props;
+
+  function handleWarningCompletionToggled(toToggleWarning, toToggleWarningIndex) {
+    let newWarnings = [
+      ...warnings.slice(0, toToggleWarningIndex),
+      {
+        msg: toToggleWarning.msg,
+        isComplete: !toToggleWarning.isComplete
+      },
+      ...warnings.slice(toToggleWarningIndex + 1)
+    ];
+
+    newWarnings = newWarnings.filter((w, i)=> !w.isComplete);
+    setWarnings(newWarnings);
+
+  }
+
+  
+
+  
+
+  return (
+    <table style={{ margin: "0 auto", width: "100%" }}>
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Warning</th>
+              <th>Handled</th>
+            </tr>
+          </thead>
+          <tbody>
+            {warnings.map((warns, index) => (
+              <tr key={warns.msg}>
+                <td>{index + 1}</td>
+                <td>{warns.msg}</td>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={warns.isComplete}
+                    onChange={() => handleWarningCompletionToggled(warns, index)}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+  );
+}
+
+export function ModuleList(props) {
+  
+  const { modules, setModules } = props;
+
+  function handleModuleCompletionToggled(toToggleModule, toToggleModuleIndex) {
+    let newModules = [
+      ...modules.slice(0, toToggleModuleIndex),
+      {
+        code: toToggleModule.code,
+        grade: toToggleModule.grade,
+        isComplete: !toToggleModule.isComplete
+      },
+      ...modules.slice(toToggleModuleIndex + 1)
+    ];
+
+    // newModules = newModules.filter((w, i)=> !w.isComplete);
+    setModules(newModules);
+
+  }
+
+  return (
+    <table style={{ margin: "0 auto", width: "100%" }}>
+          <thead>
+            <tr>
+              <th>No.</th>
+              <th>Module</th>
+              <th>Grade</th>
+              <th>Completed</th>
+            </tr>
+          </thead>
+          <tbody>
+            {modules.map((mods, index) => (
+              <tr key={mods.code}>
+                <td>{index + 1}</td>
+                <td>{mods.code}</td>
+                <td>{mods.grade}</td>
+                <td>
+                  <input
+                    type="checkbox"
+                    checked={mods.isComplete}
+                    onChange={() => handleModuleCompletionToggled(mods, index)}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+  );
+}
+
+
+
 /**
  * function to render the planner page along with all of its components
  */
@@ -80,68 +243,6 @@ export default function Planner() {
 
   //a cariable to conduct trials with
   const [p, setP] = React.useState('');
-
-
-  function convert(finalArray) {
-    let stack = ["BO"];
-    let Operator = ["AND", "OR"]
-    let precedence = ["OR", "AND"]
-    let ExpY = []
-    for (let element = 0; element < finalArray.length; element++) {
-      if (finalArray[element] == "BO") {
-        stack.push(finalArray[element]);
-      }
-      if (Operator.includes(finalArray[element])) {
-        if (Operator.includes(stack[stack.length-1]) && precedence.indexOf(stack[stack.length-1]) > precedence.indexOf(finalArray[element])) {
-          ExpY.push(stack[stack.length-1])
-          stack.pop()
-          stack.push(finalArray[element]);
-        }
-        else {
-          stack.push(finalArray[element]);
-        }
-      }
-      if (!Operator.includes(finalArray[element]) && finalArray[element] != "BO" && finalArray[element] != "BC") { 
-        ExpY.push(finalArray[element]);
-      }
-      if (finalArray[element] == "BC") {
-          for (let a = stack.length -1; a >0; a--) {
-            if (stack[a] != "BO" && stack[a] != "BC") { 
-              ExpY.push(stack[a])
-            }
-            stack.pop()
-        }
-      }
-    }
-    return ExpY;
-  }
-
-  function evaluate(finalArr) {
-    let finalArray = convert(finalArr)
-    let evaluation = false
-    let Operator = ["AND", "OR"]
-    let stack = []
-    for (let element = 0; element < finalArray.length; element++) {
-      if (!Operator.includes(finalArray[element])) {
-        stack.push(finalArray[element]);
-      }
-      if (Operator.includes(finalArray[element])) {
-          let operator = finalArray[element]
-          let operand1 = stack.pop();
-          let operand2 = stack.pop();
-        if (operator === "AND") {
-            evaluation = operand1 && operand2
-        }
-        if (operator === "OR") {
-            evaluation = operand1 || operand2
-        }
-        stack.push(evaluation)
-      }
-    }
-    console.log("hihihiih");
-    return stack.pop();
-
-  }
 
 
 
@@ -226,7 +327,7 @@ React.useEffect(
     const prereqArr4 = prereqArr3.replaceAll(")", " BC ");
     const prereqArr = prereqArr4.match(res);
 
-    console.log("HIII");
+    // console.log("HIII");
     console.log(prereqArr);
 
     let finalArray = prereqArr.map(x=>{
@@ -240,9 +341,9 @@ React.useEffect(
       }
     });
 
-    console.log(finalArray);
+    // console.log(finalArray);
     const vari = evaluate(finalArray);
-    console.log(vari);
+    // console.log(vari);
     
       if(!eligibleMods.includes(code)){
         if(!vari){
@@ -317,56 +418,13 @@ function handleAddition(code){
    .then(res => setP(res)); 
 }
 
-function WarningList(props) {
-  const { warnings, setWarnings } = props;
-
-  function handleWarningCompletionToggled(toToggleWarning, toToggleWarningIndex) {
-    const newWarnings = [
-      ...warnings.slice(0, toToggleWarningIndex),
-      {
-        msg: toToggleWarning.msg,
-        isComplete: !toToggleWarning.isComplete
-      },
-      ...warnings.slice(toToggleWarningIndex + 1)
-    ];
-    setWarnings(newWarnings);
-
-  }
-
-  return (
-    <table style={{ margin: "0 auto", width: "100%" }}>
-          <thead>
-            <tr>
-              <th>No.</th>
-              <th>Warning</th>
-              <th>Handled</th>
-            </tr>
-          </thead>
-          <tbody>
-            {warnings.map((warns, index) => (
-              <tr key={warns.msg}>
-                <td>{index + 1}</td>
-                <td>{warns.msg}</td>
-                <td>
-                  <input
-                    type="checkbox"
-                    checked={warns.isComplete}
-                    onChange={() => handleWarningCompletionToggled(warns, index)}
-                  />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-  );
-}
-
-function addToList(code){
+function addToList(code, grade){
   const newModule = [
     ...Module,
     {
       code: code,
-
+      grade: grade,
+      isComplete: false,
     }
   ];
 
@@ -378,7 +436,7 @@ function addToList(code){
 
 
 
-  function addModule(code) {
+  function addModule(code, grade) {
     
     const mods = Module.map(x=>x.code);
 
@@ -387,8 +445,9 @@ function addToList(code){
      console.log(msg);
      alert(msg);
     } else {
+      // const grade = Module.map(x=>x.grade);
       handleAddition(code);
-      addToList(code);
+      addToList(code, grade);
       console.log(eligibleMods);
     }
     setSelected(true);
@@ -397,7 +456,7 @@ function addToList(code){
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    addModule(modCode);
+    addModule(modCode, gradePlanned);
   }
 
   const handleSave = (event) => {
@@ -886,7 +945,7 @@ function addToList(code){
   }
 
 
-  const OPTIONS_LIMIT = 10;
+  const OPTIONS_LIMIT = 7;
 
   const filterOptions = createFilterOptions({
     limit: OPTIONS_LIMIT
@@ -952,8 +1011,9 @@ function addToList(code){
       <p></p>
       
     
-      {/* <Autocomplete
+      <Autocomplete
       disablePortal
+      filterOptions={filterOptions}
       id="grades"
       name="grades"
       options={[
@@ -977,7 +1037,7 @@ function addToList(code){
       autoSelect = {true}
       renderInput={(params) => <TextField {...params} label={"Predicted Grade"} />}
       onChange={(event, value) => {setGradePlanned(value.l);}}
-      /> */}
+      /> 
     
 
       <p></p>
@@ -993,7 +1053,7 @@ function addToList(code){
           </Box>
 
           <Box>
-            <h2>List of modules</h2>
+            {/* <h2>List of modules</h2>
             <table style={{ margin: "0 auto", width: "100%" }}>
               <thead>
                 <tr>
@@ -1006,10 +1066,20 @@ function addToList(code){
                   <tr key={Mod.code}>
                     <td>{idx + 1}</td>
                     <td>{Mod.code}</td>
+
                   </tr>
                 ))}
               </tbody>
-            </table>
+            </table> */}
+
+            <div>
+            {Module.length > 0 ? (
+                <ModuleList modules={Module} setModules={setModule} />
+            ) : (
+                <p>Add Modules Here!</p>
+            )}
+            </div>
+
             <p></p>
 
 
