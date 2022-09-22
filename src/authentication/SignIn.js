@@ -7,6 +7,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import Link from '@mui/material/Link';
 import Paper from '@mui/material/Paper';
+import ForgotPassword from './ForgotPassword';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -16,35 +17,24 @@ import { auth } from './firebase-config';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from "react-router-dom";
 
-function Copyright(props) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
-
 const theme = createTheme();
 
 export default function SignIn() {
   const [signInEmail, setSignInEmail] = React.useState("");
   const [signInPassword, setSignInPassword] = React.useState("");
 
-  const login = async () => {
+  const login = async (em, ps) => {
     try{
-      const user = await signInWithEmailAndPassword(
+      await signInWithEmailAndPassword(
         auth,
-        signInEmail,
-        signInPassword
-      );
-      console.log(user);
+        em,
+        ps
+      )
+      .then(()=>alert("Signed In!"))
+      .then(routeHome);
     } catch (error) {
       console.log(error.message);
+      alert(error.message);
     }
   }
 
@@ -61,7 +51,7 @@ export default function SignIn() {
       password: password,
     });
 
-    login();
+    login(email, password);
 
   };
   let goTo = useNavigate(); 
@@ -75,6 +65,11 @@ export default function SignIn() {
     goTo(path);
   }
 
+  const routeForgot = () =>{ 
+    let path = `/forgotpassword`; 
+    goTo(path);
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <Grid container component="main" sx={{ height: '100vh' }}>
@@ -85,7 +80,7 @@ export default function SignIn() {
           sm={4}
           md={7}
           sx={{
-            backgroundImage: 'url(https://source.unsplash.com/random)',
+            backgroundImage: 'url(https://images.unsplash.com/photo-1656290246543-f1ab7645d295?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8fHx8fHx8MTY1NzEyNDkwMw&ixlib=rb-1.2.1&q=80&w=1080)',
             backgroundRepeat: 'no-repeat',
             backgroundColor: (t) =>
               t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900],
@@ -109,12 +104,16 @@ export default function SignIn() {
             <Typography component="h1" variant="h5">
               Sign in
             </Typography>
-            <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
+            <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}  data-testid = "formSignIn">
               <TextField
                 margin="normal"
                 required
                 fullWidth
+                role="getEmail"
+                onChange={event => setSignInEmail(event.target.value)}
+                inputProps={{ "data-testid": "email-input" }}
                 id="email"
+                value={signInEmail}
                 label="Email Address"
                 name="email"
                 autoComplete="email"
@@ -130,22 +129,18 @@ export default function SignIn() {
                 id="password"
                 autoComplete="current-password"
               />
-              <FormControlLabel
-                control={<Checkbox value="remember" color="primary" />}
-                label="Remember me"
-              />
               <Button
                 type="submit"
                 fullWidth
+                data-testid = "buttonSignIn"
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-                onClick={routeHome}
               >
                 Sign In
               </Button>
               <Grid container>
                 <Grid item xs>
-                  <Link href="#" variant="body2">
+                  <Link href="#" variant="body2" onClick={routeForgot}>
                     Forgot password?
                   </Link>
                 </Grid>
@@ -155,7 +150,6 @@ export default function SignIn() {
                   </Link>
                 </Grid>
               </Grid>
-              <Copyright sx={{ mt: 5 }} />
             </Box>
           </Box>
         </Grid>

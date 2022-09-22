@@ -12,20 +12,17 @@ import Container from '@mui/material/Container';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import {auth} from './firebase-config';
+import { db } from "./firebase-config";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  setDoc,
+  doc,
+} from "firebase/firestore";
 import { useNavigate } from 'react-router-dom';
-
-function Copyright(props) {
-  return (
-    <Typography variant="body2" color="text.secondary" align="center" {...props}>
-      {'Copyright © '}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{' '}
-      {new Date().getFullYear()}
-      {'.'}
-    </Typography>
-  );
-}
 
 const theme = createTheme();
 
@@ -34,6 +31,12 @@ export default function SignUp() {
   const [signUpPassword, setSignUpPassword] = React.useState("");
   const [signUpFirstName, setSignUpFirstName] = React.useState("");
   const [signUpLastName, setSignUpLastName] = React.useState("");
+  const [signUpYear, setSignUpYear] = React.useState("");
+  const [signUpSemester, setSignUpSemester] = React.useState("");
+  const [signUpMajor, setSignUpMajor] = React.useState("");
+  const [signUpMinor, setSignUpMinor] = React.useState("");
+  const [signUpOtherProgrammes, setSignUpOtherProgrammes] = React.useState("");
+  const [signUpDisplayName, setSignUpDisplayName] = React.useState("");
 
   const goTo = useNavigate();
   const routeHome = () =>{ 
@@ -46,19 +49,17 @@ export default function SignUp() {
     goTo(path);
   }
 
-  const signup = async () => {
+  const signup = async (em, ps, userProfile) => {
     try{
-      const user = await createUserWithEmailAndPassword(auth, signUpEmail, signUpPassword);
-     
-      /**
-      const user = await auth.signup({
-        //fill in the registration form details more elaborately
-      })
-      */
-
-      console.log(user);
+      await createUserWithEmailAndPassword(auth, em, ps).then(user=> {
+      const userRef = doc(db, "users", user.user.uid);
+      setDoc(userRef, userProfile);
+    })
+    .then(()=>alert("Thank you for joining us!"))
+    .then(routeHome);
     } catch (error) {
       console.log(error.message);
+      alert(error.message);
     }
   };
 
@@ -67,20 +68,91 @@ export default function SignUp() {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const email = data.get('email');
-    setSignUpEmail(email);
     const password = data.get('password');
-    setSignUpPassword(password);
+    const confirmpassword = data.get('confirmpassword');
     const firstName = data.get('firstName');
-    setSignUpFirstName(firstName);
     const lastName = data.get('lastName');
-    setSignUpLastName(lastName);
-    console.log({
+    const major = data.get('major');
+    const minor = data.get('minor');
+    const year = data.get('year');
+    const semester = data.get('semester');
+    const otherProgrammes = data.get('otherProgrammes');
+    const displayName = data.get('displayName');
+
+    const user = {
       email: email,
-      password: password,
+      displayName: displayName,
       firstName: firstName,
       lastName: lastName,
-    });
-    signup();
+      major: major,
+      minor: minor,
+      year: year,
+      semester: semester,
+      otherProgrammes: otherProgrammes,
+      Y1S1Planned: [],
+      // Y1S1Confirmed: [''],
+      Y1S1CAP: 0,
+      Y1S1MC:0,
+
+      Y1S2Planned: [],
+      // Y1S2Confirmed: [''],
+      Y1S2CAP:0,
+      Y1S2MC:0,
+
+      Y2S1Planned: [],
+      // Y2S1Confirmed: [''],
+      Y2S1CAP:0,
+      Y2S1MC:0,
+
+      Y2S2Planned: [],
+      // Y2S2Confirmed: [''],
+      Y2S2CAP:0,
+      Y2S2MC:0,
+
+      Y3S1Planned: [],
+      // Y3S1Confirmed: [''],
+      Y3S1CAP:0,
+      Y3S1MC:0,
+
+      Y3S2Planned: [],
+      // Y3S2Confirmed: [''],
+      Y3S2CAP:0,
+      Y3S2MC:0,
+
+      Y4S1Planned: [],
+      // Y4S1Confirmed: [''],
+      Y4S1CAP:0,
+      Y4S1MC:0,
+
+      Y4S2Planned: [],
+      // Y4S2Confirmed: [''],
+      Y4S2CAP:0,
+      Y4S2MC:0,
+
+      eligibleMods: [''],
+      currentCAP: 0,
+      currentMC: 0,
+      warnings: [''],
+    }
+
+    setSignUpEmail(email);
+    setSignUpFirstName(firstName);
+    setSignUpLastName(lastName);
+    setSignUpMajor(major);
+    setSignUpMinor(minor);
+    setSignUpYear(year);
+    setSignUpSemester(semester);
+    setSignUpOtherProgrammes(otherProgrammes);
+    setSignUpDisplayName(displayName);
+    if(email && firstName && lastName && displayName && major && year && semester && password && confirmpassword){
+      if(confirmpassword==password){
+        signup(email, password, user);
+      } else { 
+        alert("Please make sure your passwords match!");
+      }
+    } else {
+      alert("Please enter all mandatory fields!");
+    }
   };
 
   return (
@@ -124,6 +196,16 @@ export default function SignUp() {
                   autoComplete="family-name"
                 />
               </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  required
+                  fullWidth
+                  id="displayName"
+                  label="Display Name"
+                  name="displayName"
+                  autoComplete="displayName"
+                />
+              </Grid>
               <Grid item xs={12}>
                 <TextField
                   required
@@ -142,7 +224,66 @@ export default function SignUp() {
                   label="Password"
                   type="password"
                   id="password"
-                  autoComplete="new-password"
+                  autoComplete="password"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  name="confirmpassword"
+                  label="Confirm Password"
+                  type="password"
+                  id="confirmpassword"
+                  autoComplete="password"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  id="year"
+                  label="Year"
+                  name="year"
+                  autoComplete="year"
+                />
+              </Grid>
+              <Grid item xs={12}>
+                <TextField
+                  required
+                  fullWidth
+                  id="semester"
+                  label="Semester"
+                  name="semester"
+                  autoComplete="semester"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  required
+                  fullWidth
+                  id="major"
+                  label="Major"
+                  name="major"
+                  autoComplete="major"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  id="minor"
+                  label="Minor"
+                  name="minor"
+                  autoComplete="minor"
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  fullWidth
+                  id="otherProgrammes"
+                  label="Other Programmes"
+                  name="otherProgrammes"
+                  autoComplete="otherProgrammes"
                 />
               </Grid>
             </Grid>
@@ -151,7 +292,6 @@ export default function SignUp() {
               fullWidth
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
-              onClick={routeHome}
             >
               Sign Up
             </Button>
@@ -167,7 +307,6 @@ export default function SignUp() {
             </Grid>
           </Box>
         </Box>
-        <Copyright sx={{ mt: 5 }} />
       </Container>
     </ThemeProvider>
   );

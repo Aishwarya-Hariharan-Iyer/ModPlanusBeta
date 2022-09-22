@@ -28,7 +28,7 @@ export default function ListItems(){
   };
 
   const goToProfile = () =>{ 
-    let path = `/account`; 
+    let path = `/profile`; 
     if(user!==null){
     goTo(path);
   }else{
@@ -47,6 +47,15 @@ export default function ListItems(){
 
   const goToPlanner = () =>{ 
     let path = `/planner`; 
+    if(user!==null){
+      goTo(path);
+    }else{
+      goTo('/signin');
+    }
+  };
+
+  const goToChatroom = () =>{ 
+    let path = `/Chatroom`; 
     if(user!==null){
       goTo(path);
     }else{
@@ -74,18 +83,18 @@ export default function ListItems(){
       </ListItemIcon>
       <ListItemText primary="CAP Calculator" />
     </ListItemButton>
-    <ListItemButton>
+    {/* <ListItemButton>
       <ListItemIcon>
         <BookIcon />
       </ListItemIcon>
       <ListItemText primary="Module Information" />
-    </ListItemButton>
-    <ListItemButton>
+    </ListItemButton> */}
+    {/* <ListItemButton onClick={goToChatroom}>
       <ListItemIcon>
         <MessageIcon />
       </ListItemIcon>
       <ListItemText primary="ChatRoom" />
-    </ListItemButton>
+    </ListItemButton> */}
     <ListItemButton onClick={goToProfile}>
       <ListItemIcon>
         <ManageAccountsIcon />

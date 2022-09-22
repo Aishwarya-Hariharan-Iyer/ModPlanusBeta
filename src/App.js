@@ -13,11 +13,12 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 // eslint-disable-next-line no-unused-vars
 import ListItems from './dashboard/listItems';
+import firebase from 'firebase/compat/app';
 import './App.css';
 import SignUp from './authentication/SignUp';
 import SignIn from './authentication/SignIn';
 import SignOut from './authentication/SignOut';
-import {BrowserRouter as Router, Routes, Route} from 'react-router-dom';
+import {BrowserRouter as Router, Routes, Route, useLocation, BrowserRouter} from 'react-router-dom';
 import Home from './homepage/Home';
 import Planner from './module-planner/planner-main';
 import Calculator from './cap-calculator/calculator';
@@ -27,6 +28,8 @@ import Profile from './profile-page/Profile';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
 import RightButtons from './dashboard/RightButtons';
+import FeedbackForm from './feedback-form/FeedbackForm';
+import ForgotPassword from './authentication/ForgotPassword';
 
 const drawerWidth = 240;
 
@@ -95,6 +98,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
   }),
 );
 
+
 export default function App() {
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
@@ -107,6 +111,8 @@ export default function App() {
     setOpen(false);
   };
 
+  const user = firebase.auth().currentUser;
+  const name = user?.email;
 
   //const email = firebase.auth().currentUser.email;
 
@@ -131,7 +137,7 @@ export default function App() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap component="div">
-            Welcome to ModPlaNUS
+            WELCOME TO MODPLANUS...
           </Typography>
           </Box>
           <RightButtons/>
@@ -156,6 +162,9 @@ export default function App() {
         <Route path='/planner' element={<Planner/>}/>
         <Route path='/calculator' element={<Calculator/>}/>
         <Route path='/dashboard' element = {<Dashboard/>}/>
+        <Route path='/feedbackform' element = {<FeedbackForm/>}/>
+        <Route path='/profile' element = {<Profile/>}/>
+        <Route path='/forgotpassword' element = {<ForgotPassword/>}/>
         <Route path='/' element = {<Dashboard/>}/>
         <Route path='/account' element = {<Profile/>}/>
         <Route path="*" element={<NotFoundPage/>} />

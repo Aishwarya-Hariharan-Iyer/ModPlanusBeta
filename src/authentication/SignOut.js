@@ -13,35 +13,17 @@ import { auth } from "./firebase-config";
 import { signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
-function Copyright(props) {
-  return (
-    <Typography
-      variant="body2"
-      color="text.secondary"
-      align="center"
-      {...props}
-    >
-      {"Copyright © "}
-      <Link color="inherit" href="https://mui.com/">
-        Your Website
-      </Link>{" "}
-      {new Date().getFullYear()}
-      {"."}
-    </Typography>
-  );
-}
-
 const theme = createTheme();
 
 export default function SignOut() {
   const signout = async () => {
-    await signOut(auth);
+    await signOut(auth).then(()=>alert("Signed Out!"));
   };
 
   let goTo = useNavigate();
 
   const goFirst = () =>{
-    let path = '/';
+    let path = '/dashboard';
     goTo(path);
   }
 
@@ -55,7 +37,7 @@ export default function SignOut() {
           sm={4}
           md={7}
           sx={{
-            backgroundImage: "url(https://source.unsplash.com/random)",
+            backgroundImage: "url(https://images.unsplash.com/photo-1654885506947-fe5280d8e0ea?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8fHx8fHx8MTY1NzEyNTI2Ng&ixlib=rb-1.2.1&q=80&w=1080)",
             backgroundRepeat: "no-repeat",
             backgroundColor: (t) =>
               t.palette.mode === "light"
@@ -79,24 +61,25 @@ export default function SignOut() {
               <LockOutlinedIcon />
             </Avatar>
             <Typography component="h1" variant="h5">
-              SignOut
+              Do You Want To Sign out? 
             </Typography>
             <Box
               component="form"
               noValidate
-              onClick={signout}
               sx={{ mt: 1 }}
+              onClick = {()=>{
+                signout();
+                goFirst();
+              }}
             >
               <Button
                 type="submit"
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-                onClick = {goFirst}
               >
                 SignOut
               </Button>
-              <Copyright sx={{ mt: 5 }} />
             </Box>
           </Box>
         </Grid>

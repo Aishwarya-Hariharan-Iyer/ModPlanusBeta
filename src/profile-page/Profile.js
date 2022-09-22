@@ -9,8 +9,19 @@ import { useState } from 'react';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 import 'firebase/compat/database';
+import { useNavigate } from 'react-router-dom';
+import { getAuth } from "firebase/auth";
+import { db } from '../authentication/firebase-config';
+import {
+  onSnapshot,
+  updateDoc,
+  doc,
+  update,
+} from "firebase/firestore";
+import '@firebase/firestore'
 
 export default function Profile() { 
+
 
 
   const [firstName, setFirstName] = useState('');
@@ -21,66 +32,132 @@ export default function Profile() {
   const [otherProgrammes, setOtherProgrammes] = useState('');
   const [year, setYear] = useState('');
   const [semester, setSemester] = useState('');
+  const [info, setInfo] = useState([]);
 
 
-  const database = firebase.database();
+  const [userInfo, setUserInfo] = useState([]);
 
   const handleSubmit = (e) => {
-    //console.log(user?.email);
     e.preventDefault();
-    // const users = firebase.database().ref('User');
-   // const currUserEmail = firebase.auth().currentUser.email;
-    
-   const email = firebase.auth().currentUser.email.split('@')[0];
-   console.log(email);
-   database.ref('/users/'+ email).set(
-    {
-      firstName : firstName,
-      lastName : lastName,
+    updateUser(firebase.auth().currentUser.uid);  
+  };
+
+  function getInfo(){
+    if(firebase.auth().currentUser){
+
+      const user = onSnapshot(doc(db, "users", firebase.auth().currentUser.uid), 
+       (doc) => {
+        //console.log(doc.data());
+         setUserInfo(doc.data());
+        });
+        return user;
+      } else {
+      //  console.log("no info");
+      }
+  }
+
+  React.useEffect(()=>{getInfo()}, []);
+  React.useEffect(()=>{
+    setOtherProgrammes(userInfo.otherProgrammes);
+    setMinor(userInfo.minor);
+    setMajor(userInfo.major);
+    setSemester(userInfo.semester);
+    setYear(userInfo.year);
+    setDisplayName(userInfo.displayName);
+    setLastName(userInfo.lastName);
+    setFirstName(userInfo.firstName);
+  }, [userInfo])
+  const user = firebase.auth().currentUser;
+
+  const deleteUser = () => {
+    user.delete()
+    .then(()=>goToDashBoard())
+    .then(() => alert("We are sad to see you go!"))
+    .catch((error) => alert(error.message))
+};
+  
+
+  const updateUser = async (id) => {
+    const userDoc = doc(db, "users", id);
+    const userNew = {
+      firstName: firstName,
+      lastName: lastName,
       displayName: displayName,
-      email: email,
       year: year,
       semester: semester,
-      major:major,
-      minor:minor,
-      otherProgrammes: otherProgrammes
-    });
-
-    //users.push(user);
+      major: major,
+      minor: minor,
+      otherProgrammes: otherProgrammes,
+    }
+    await updateDoc(userDoc, userNew);
+    // const res = await userDoc.update({firstName: firstName});
   };
+
+  const goTo = useNavigate();
+  
+  const goToDashBoard = () =>{
+        goTo('/dashboard');
+  };
+
+  const auth = getAuth();
+
+  const emailStr = userInfo.email;
+  
 
   return (
     <React.Fragment>
       <Typography variant="h3" gutterBottom>
-        My Profile
+        My Profile 
       </Typography>
 
 <p></p>
 
-      <Typography variant="p" gutterBottom>
-      Your Display Name is how you shall appear to others. Please enter your year of study for the current/upcoming academic year in the format 'YEAR X'
-        (e.g. YEAR 1, YEAR 2, etc.). Similarly, enter your Semester of study as 'SEMESTER 1' or 'SEMESTER 2'.
-      </Typography>
-
 <p></p>
+
+<Grid item xs={12} sm={6} m={5}>
+          <Typography variant='h6'>
+     Email
+      </Typography>
+      <p></p>
+          <TextField
+          disabled
+            id="email"
+            name="email"
+            value={userInfo.email}
+            fullWidth
+            autoComplete="email"
+            variant="outlined"
+            helperText="You can not edit this field"
+          />
+        </Grid>
       <Grid item xs={12} sm={6} m={5}>
+      <Typography variant='h6'>
+      First Name
+      </Typography>
+      <p></p>
+      
           <TextField
             required
             id="firstName"
             name="firstName"
-            label="First name"
             fullWidth
+            value={firstName}
             autoComplete="given-name"
             variant="outlined"
-            onChange={(e) => setFirstName(e.target.value)}
+            onChange={(e) => {setFirstName(e.target.value)}}
           />
         </Grid>
+
         <Grid item xs={12} sm={6} m={5}>
+        <Typography variant='h6'>
+      Last Name
+      </Typography>
+      <p></p>
           <TextField
             required
             id="lastName"
             name="lastName"
-            label="Last name"
+            value={lastName}
             fullWidth
             autoComplete="family-name"
             variant="outlined"
@@ -89,46 +166,65 @@ export default function Profile() {
           </Grid>
 
           <Grid item xs={12} sm={6} m={5}>
+          <Typography variant='h6'>
+     Display Name
+      </Typography>
+      <p></p>
           <TextField
             required
             id="displayName"
             name="displayName"
-            label="Display name"
+            value={displayName}
             fullWidth
+            helperText="You will be visible to other users as this"
             autoComplete="display-name"
             variant="outlined"
             onChange={(e) => setDisplayName(e.target.value)}
           />
         </Grid>
         <Grid item xs={12} sm={6} m={5}>
+        <Typography variant='h6'>
+      Year
+      </Typography>
+      <p></p>
           <TextField
             required
             id="year"
             name="year"
-            label="Current Year"
+            value={year}
             fullWidth
+            helperText="Current year of study"
             autoComplete="year"
             variant="outlined"
             onChange={(e) => setYear(e.target.value)}
           />
           </Grid>
         <Grid item xs={12} sm={6} m={5}>
+        <Typography variant='h6'>
+      Semester
+      </Typography>
+      <p></p>
           <TextField
             required
             id="semester"
             name="semester"
-            label="Semester"
+            value={semester}
             fullWidth
+            helperText="Current semester of study"
             variant="outlined"
             onChange={(e) => setSemester(e.target.value)}
           />
         </Grid>
         <Grid item xs={12} m={5}>
+        <Typography variant='h6'>
+      Major
+      </Typography>
+      <p></p>
           <TextField
             required
             id="major"
             name="major"
-            label="Major"
+            value={major}
             fullWidth
             autoComplete="major"
             variant="outlined"
@@ -136,10 +232,14 @@ export default function Profile() {
           />
         </Grid>
         <Grid item xs={12} m={5}>
+        <Typography variant='h6'>
+      Minor
+      </Typography>
+      <p></p>
           <TextField
             id="minor"
             name="minor"
-            label="Minor"
+            value={minor}
             fullWidth
             autoComplete="minor"
             variant="outlined"
@@ -147,11 +247,16 @@ export default function Profile() {
           />
         </Grid>
         <Grid item xs={12} sm={6} m={5}>
+        <Typography variant='h6'>
+      Other Programmes
+      </Typography>
+      <p></p>
           <TextField
             id="other programmes"
             name="other programmes"
-            label="Other Programmes"
+            value= {otherProgrammes}
             fullWidth
+            helperText="Such as USP, Doube Major, etc."
             autoComplete="other programmes"
             variant="outlined"
             onChange={(e) => setOtherProgrammes(e.target.value)}
@@ -169,6 +274,7 @@ export default function Profile() {
         <Button variant="outlined" 
         startIcon={<DeleteIcon />}
         sx ={{m: 4}}
+        onClick={deleteUser}
         >
         Delete Account
         </Button>

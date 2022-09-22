@@ -2,7 +2,8 @@ import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth } from "firebase/auth";
 import {getDatabase} from "firebase/database";
-import firebase from 'firebase/compat/app'
+import firebase from 'firebase/compat/app';
+import {getFirestore} from 'firebase/firestore';
 import 'firebase/compat/auth'
 import 'firebase/compat/database'
 // TODO: Add SDKs for Firebase products that you want to use
@@ -11,8 +12,9 @@ import 'firebase/compat/database'
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyBoPAQUik-YRZjX3WcSGvpbhO_gK0Uiz7Q",
+  apiKey: "AIzaSyBXA1kSfPRpqDgY8ltyOcMff1ZcXQIoAbg",
   authDomain: "modplanus-1c3ba.firebaseapp.com",
+  databaseURL: "https://modplanus-1c3ba-default-rtdb.firebaseio.com",
   projectId: "modplanus-1c3ba",
   storageBucket: "modplanus-1c3ba.appspot.com",
   messagingSenderId: "1480562933",
@@ -22,6 +24,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+export const db = getFirestore(app);
 const analytics = getAnalytics(app);
 export const database = getDatabase(app);
 export const auth = getAuth(app);

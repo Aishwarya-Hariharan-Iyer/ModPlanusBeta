@@ -8,6 +8,27 @@ import CssBaseline from '@mui/material/CssBaseline';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Input from '@mui/material/Input';
+import { InputAdornment } from "@mui/material";
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+import 'firebase/compat/database';
+import DeleteIcon from '@mui/icons-material/Delete';
+import SaveIcon from '@mui/icons-material/Save';
+import { db } from '../authentication/firebase-config';
+import {
+  onSnapshot,
+  updateDoc,
+  doc,
+  update,
+} from "firebase/firestore";
+import '@firebase/firestore'
+var temp;
+
+
 
 const theme = createTheme();
 
@@ -18,6 +39,36 @@ export default function Calculator() {
   const [credits, setCredits] = useState(0);
   const [mc, setMC] = useState(0);
   const [addModuleText, setAddModuleText] = useState("");
+  const [cmc, setCMC] = useState(0);
+  const [cap, setCap] = useState(0);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [userInfo, setUserInfo] = useState([]);
+
+  function getInfo(){
+    if(firebase.auth().currentUser){
+
+      const user = onSnapshot(doc(db, "users", firebase.auth().currentUser.uid), 
+       (doc) => {
+        //console.log(doc.data());
+         setUserInfo(doc.data());
+        });
+        return user;
+      } else {
+      //  console.log("no info");
+      }
+  }
+
+  React.useEffect(()=>{getInfo()}, []);
+  React.useEffect(()=>{
+    if(userInfo.currentCAPMC){
+    setCMC(userInfo.currentCAPMC);
+    setCap(userInfo.currentCAP);
+    } else {
+      setCMC(0);
+    setCap(userInfo.currentCAP);
+    }
+  }, [userInfo]);
 
   function handleAddModule(event) {
     // React honours default browser behavior and the
@@ -26,7 +77,10 @@ export default function Calculator() {
     // default behaviour here as we don't want to refresh
     event.preventDefault();
     addModule(addModuleText, addGradeText, addMC);
-    console.log(addModuleText);
+    console.log('hiii');
+    console.log(cap);
+    console.log(cmc);
+    console.log(mc);
   }
 
   function addModule(description, desc, des) {
@@ -39,14 +93,44 @@ export default function Calculator() {
         isComplete: false
       }
     ];
-    setMC(mc + des * 1);
-    setCredits(credits + des * ComputeC(desc));
+    console.log(desc !== "S");
+    if (desc !== "S" && desc !== "U") {
+      setMC(mc + des * 1);
+    }
+    else {
+      setMC(mc);
+    }
+    setCredits(credits + (des * ComputeC(desc)));
     const newNew = newModule.map((m) => m.description);
     setModule(newModule);
     //console.log(newModule);
     console.log(newNew);
     //setS(newNew);
   }
+
+  const updateUser = async (id) => {
+    const userDoc = doc(db, "users", id);
+    const newCAP = ((credits + (cap*cmc)) / (mc + cmc)).toFixed(2);
+    const userNew = {
+      currentCAP: newCAP,
+      currentCAPMC: mc + cmc
+    }
+    await updateDoc(userDoc, userNew);
+    // const res = await userDoc.update({firstName: firstName});
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if(firebase.auth().currentUser.uid){
+    updateUser(firebase.auth().currentUser.uid);  
+    } else {
+      alert("Please Log In!");
+    }
+
+
+  }
+
+  const database = firebase.database();
 
   function ComputeC(grade) {
     if (grade === "A+" || grade === "A") {
@@ -61,6 +145,9 @@ export default function Calculator() {
     if (grade === "B") {
       return 3.5;
     }
+    if (grade === "B-") {
+      return 3;
+    }
     if (grade === "C+") {
       return 2.5;
     }
@@ -74,6 +161,12 @@ export default function Calculator() {
       return 1;
     }
     if (grade === "F") {
+      return 0;
+    }
+    if (grade === "S") {
+      return 0;
+    }
+    if (grade === "U") {
       return 0;
     }
   }
@@ -94,7 +187,7 @@ export default function Calculator() {
           sm={4}
           md={7}
           sx={{
-            backgroundImage: 'url(https://source.unsplash.com/random)',
+            backgroundImage: 'url(https://images.unsplash.com/photo-1656660364352-3a504c39bde2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwxfDB8MXxyYW5kb218MHx8fHx8fHx8MTY1NzEyNTEzOA&ixlib=rb-1.2.1&q=80&w=1080)',
             backgroundRepeat: 'no-repeat',
             backgroundColor: (t) =>
               t.palette.mode === 'light' ? t.palette.grey[50] : t.palette.grey[900],
@@ -113,51 +206,77 @@ export default function Calculator() {
             }}
           >
             <Typography component="h1" variant="h5">
-              CAP calculator!
+              CAP Calculator
             </Typography>
             <Box component="form" noValidate sx={{ mt: 1 }}
 >
             <h2>Add Data</h2>
             <form onSubmit={handleAddModule}>
+              <Typography>
               Module Name
+              </Typography>
               <label>
                 <Input
                   style={{ margin: "0 1rem" }}
                   type="text"
                   value={addModuleText}
                   onChange={(event) => {
-
                         setAddModuleText(event.target.value);
-
                   }
                   }
                 />
               </label>
             </form>
             <p> </p>
-            <form onSubmit={handleAddModule}>
-              Input Grade
-              <label>
-                <Input
-                  style={{ margin: "0 1rem" }}
-                  type="text"
-                  value={addGradeText}
-                  onChange={(event) => {
-                    setAddGradeText(event.target.value);
-                  }}
-                />
-              </label>
-            </form>
+            <FormControl variant="standard" sx={{ m: 1, minWidth: 275 }} onSubmit={handleAddModule}>
+            <Typography>
+             Grade
+            </Typography>
+              <Select
+                labelId="demo-simple-select-standard-label"
+                id="demo-simple-select-standard"
+                type="text"
+                value={addGradeText}
+                onChange={(event) => {
+                  temp = event.target.value; 
+                  setAddGradeText(event.target.value);
+                }}
+                // label="Grade"
+              >
+                <MenuItem value="">
+                </MenuItem>
+                <MenuItem value = {"A+"}>A+</MenuItem>
+                <MenuItem value = {"A"}>A</MenuItem>
+                <MenuItem value = {"A-"}>A-</MenuItem>
+                <MenuItem value = {"B+"}>B+</MenuItem>
+                <MenuItem value = {"B"}>B</MenuItem>
+                <MenuItem value = {"B-"}>B-</MenuItem>
+                <MenuItem value = {"C+"}>C+</MenuItem>
+                <MenuItem value = {"C"}>C</MenuItem>
+                <MenuItem value = {"D+"}>D+</MenuItem>
+                <MenuItem value = {"D"}>D</MenuItem>
+                <MenuItem value = {"F"}>F</MenuItem>
+                <MenuItem value = {"S"}>S</MenuItem>
+                <MenuItem value = {"U"}>U</MenuItem>
+              </Select>
+            </FormControl>
             <p> </p>
             <form onSubmit={handleAddModule}>
-              Input MC
+            <Typography>
+              Module Credits (MC)
+            </Typography>
               <label>
                 <Input
                   style={{ margin: "0 1rem" }}
                   type="text"
                   value={addMC}
                   onChange={(event) => {
-                    setAddMC(event.target.value);
+                    if (temp === "S" || temp === "U") {
+                      setAddMC(0);
+                    }
+                    else {
+                      setAddMC(event.target.value);
+                    }
                   }}
                 />
               </label>
@@ -170,7 +289,7 @@ export default function Calculator() {
           </Box>
 
           <Box>
-            <h2>Data of all modules</h2>
+            <h2>Calculate Here!</h2>
             <table style={{ margin: "0 auto", width: "100%" }}>
               <thead>
                 <tr>
@@ -178,7 +297,7 @@ export default function Calculator() {
                   <th>Modules</th>
                   <th>Grade</th>
                   <th>MC</th>
-                  <th>MC*GP</th>
+                  <th>Score</th>
                 </tr>
               </thead>
               <tbody>
@@ -193,11 +312,28 @@ export default function Calculator() {
                 ))}
               </tbody>
             </table>
-            <h4>CAP is:</h4>
-            <h4>{credits / mc}</h4>
+            <h4>New CAP is: {((credits + (cap*cmc)) / (mc + cmc)).toFixed(2)}</h4>
+            <h4>Current CAP is: {cap}</h4>
+
+            <Grid item xs={12} m={5}>
+            <Button variant="contained" 
+            startIcon={<SaveIcon />} 
+            sx ={{m: 4}}
+            onClick={handleSubmit}
+            >
+            Save Changes
+            </Button>
+            {/* <Button variant="outlined" 
+            startIcon={<DeleteIcon />}
+            sx ={{m: 4}} 
+            onClick={ deleteProfile }
+            >
+            Delete Account
+            </Button> */}
+            </Grid>
           </Box>
           <p> </p>
-            </Box>
+        </Box>
         </Grid>
       </Grid>
     </ThemeProvider>
