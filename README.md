@@ -1,3 +1,14 @@
+> ⚠️ **Archived Repository Notice**
+>
+> This repository is **archived** and is no longer actively maintained.
+>
+> For the **most up-to-date version**, ongoing development, and latest features,  
+> 👉 **please visit the main repository here:**  
+> **[https://github.com/ModPlaNUS/ModPlaNUS]**
+>
+> This archived version is preserved for reference purposes only.
+
+
 # 🎓 ModPlaNUS
 
 ModPlaNUS is a comprehensive web application designed to help NUS students plan, track, and manage their academic journey—all in one place.
