@@ -3,8 +3,8 @@
 > This repository is **archived** and is no longer actively maintained.
 >
 > For the **most up-to-date version**, ongoing development, and latest features,  
-> 👉 **please visit the main repository here:**  
-> **[https://github.com/ModPlaNUS/ModPlaNUS]**
+> 👉 please visit the **main repository**:  
+> **https://github.com/ModPlaNUS/ModPlaNUS**
 >
 > This archived version is preserved for reference purposes only.
 
